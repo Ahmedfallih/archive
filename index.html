@@ -62,15 +62,16 @@ dialog::backdrop{background:#000a}
   </div>
   <div class="card hide" id="capForm">
    <img class="prev" id="prev" alt="">
+   <div id="err" class="hide" style="background:#ffe8e8;color:#a00;border-radius:12px;padding:10px;margin:8px 0;font-size:13px;direction:ltr;text-align:left;word-break:break-word"></div>
    <div class="busy hide" id="busy"><span class="spin">⏳</span> الذكاء الاصطناعي يقرأ المستند...</div>
-   <label>اسم الناخب</label><input type="text" id="fName">
+   <label>اسم المستلم</label><input type="text" id="fName">
    <label>رقم الناخب</label><input type="text" id="fNum" inputmode="numeric">
    <label>اسم الموظف الذي سلّم البطاقة</label><input type="text" id="fEmp">
    <div class="row"><button class="big g" id="save">💾 حفظ</button><button class="big s" id="cancel">إلغاء</button></div>
   </div>
  </section>
  <section id="srch" class="hide">
-  <div class="card"><input type="search" id="q" placeholder="اكتب اسم الناخب..."></div>
+  <div class="card"><input type="search" id="q" placeholder="اكتب اسم المستلم..."></div>
   <div id="sRes"></div>
  </section>
  <section id="exp" class="hide">
@@ -159,23 +160,38 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
  return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
 }
 /* ---------- AI extraction ---------- */
-const P="هذه صورة مستند (بطاقة ناخب) باللغة العربية. استخرج: اسم الناخب الكامل، رقم الناخب (أرقام فقط)، واسم الموظف الذي سلّم البطاقة (يكون مكتوباً أسفل المستند). أعد JSON فقط بهذا الشكل: {\"voter_name\":\"\",\"voter_number\":\"\",\"employee_name\":\"\"}. اترك الحقل فارغاً إن لم تجده ولا تخمّن.";
+const P="هذه استمارة تسليم بطاقات الناخبين الإلكترونية (عربي/كردي) فيها كتابة بخط اليد. استخرج بدقة: (1) اسم المستلم: الاسم المكتوب بخط اليد في حقل «اسم المستلم» أعلى الاستمارة. (2) رقم الناخب: الرقم المكتوب بخط اليد في حقل «رقم الناخب» تحديداً، وليس رقم البطاقة ولا رقم الوثيقة ولا الرقم التسلسلي الأحمر. (3) اسم الموظف: الاسم المكتوب بخط اليد بجانب «اسم موظف التسليم» أسفل الاستمارة، وليس اسم المستلم الثاني ولا التوقيع. أعد JSON فقط بهذا الشكل: {\"voter_name\":\"اسم المستلم\",\"voter_number\":\"\",\"employee_name\":\"\"}. اكتب الأسماء بالعربية، والأرقام بالإنجليزية 0-9. اترك الحقل فارغاً إن لم تكن متأكداً ولا تخمّن.";
 const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}};
 async function extract(blob){
+ const er=$("#err");er.classList.add("hide");er.textContent="";
+ const fail=m=>{er.textContent="⚠️ "+m;er.classList.remove("hide");toast("تعذّرت القراءة، أدخل البيانات يدوياً")};
  try{
-  const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑 بالأسفل)");throw 0}
+  const key=getKey();if(!key){fail("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح ");$("#busy").classList.add("hide");return}
   const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)});
-  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:400,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:P}]}]})});
-  const j=await res.json();if(!res.ok)throw 0;
-  const r=JSON.parse(j.content.map(c=>c.text||"").join("").replace(/```json|```/g,"").trim());
+  let t="";
+  try{
+   if(key.startsWith("sk-ant")){
+    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:400,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:P}]}]})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
+    t=j.content.map(c=>c.text||"").join("");
+   }else{
+    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:{responseMimeType:"application/json"}})});
+    const j=await res.json().catch(()=>({}));
+    if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
+    t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+   }
+  }catch(e){fail("فشل الاتصال بالإنترنت أو تم حظر الطلب: "+e.message);$("#busy").classList.add("hide");return}
+  const m=t.match(/\{[\s\S]*\}/);if(!m){fail("رد غير متوقع: "+t.slice(0,150));$("#busy").classList.add("hide");return}
+  const r=JSON.parse(m[0]);
   $("#fName").value=r.voter_name||"";$("#fNum").value=String(r.voter_number||"").replace(/\s/g,"");$("#fEmp").value=r.employee_name||"";
   toast("تمت القراءة ✅ راجع البيانات");
- }catch(e){toast("تعذّرت القراءة التلقائية، أدخل البيانات يدوياً")}
+ }catch(e){fail(e.message||String(e))}
  $("#busy").classList.add("hide");
 }
-function reset(){$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
+function reset(){$("#err").classList.add("hide");$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
 $("#cancel").onclick=reset;
-$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Anthropic API (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
+$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Gemini المجاني أو Anthropic (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
 $("#save").onclick=async()=>{
  const name=$("#fName").value.trim(),num=$("#fNum").value.trim(),emp=$("#fEmp").value.trim();
  if(!num){toast("رقم الناخب مطلوب لتسمية الصورة");return}
@@ -207,7 +223,7 @@ async function share(blob,filename){
 async function cell(c,v){return `<c r="${c}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`}
 $("#xl").onclick=async()=>{
  const a=await all();if(!a.length){toast("لا توجد بيانات");return}
- const used=new Set(),H=["ت","اسم الناخب","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],col="ABCDEF";
+ const used=new Set(),H=["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],col="ABCDEF";
  let rows=`<row r="1">${H.map((h,i)=>`<c r="${col[i]}1" t="inlineStr"><is><t>${esc(h)}</t></is></c>`).join("")}</row>`;
  a.forEach((x,i)=>{const r=i+2,v=[i+1,x.name,x.num,x.emp,x.date,fname(x,used)];
   rows+=`<row r="${r}">${v.map((t,j)=>`<c r="${col[j]}${r}" t="inlineStr"><is><t>${esc(t)}</t></is></c>`).join("")}</row>`});
