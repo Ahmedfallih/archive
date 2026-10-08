@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أرشفة المستندات</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f6ff;--card:#fff;--tx:#1d2340;--mut:#69708f;--bd:#e2e7f7}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12152b;--card:#1e2240;--tx:#eef0ff;--mut:#a3a9cc;--bd:#32386388}}
+:root[data-theme="dark"]{--bg:#12152b;--card:#1e2240;--tx:#eef0ff;--mut:#a3a9cc;--bd:#32386388}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;min-height:100vh}
+header{padding:18px 16px 6px;text-align:center}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--mut);font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 14px}
+.tab{border:0;border-radius:20px;padding:14px 4px 10px;color:#fff;font:inherit;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 8px #0002;opacity:.78}
+.tab .i{font-size:30px;line-height:1}
+.tab:active{transform:scale(.92)}
+.tab.on{opacity:1;transform:translateY(-3px) scale(1.04);box-shadow:0 8px 16px #0003}
+.t1{background:linear-gradient(135deg,#ff7a45,#ff3d71)}.t2{background:linear-gradient(135deg,#3d8bff,#2cd0ff)}.t3{background:linear-gradient(135deg,#1fc16b,#8be04e)}.t4{background:linear-gradient(135deg,#9b5cff,#ff5cc8)}
+main{padding:4px 14px 40px;max-width:640px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px}
+.hide{display:none}
+.big{width:100%;border:0;border-radius:18px;padding:18px;font:inherit;font-size:17px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff7a45,#ff3d71);transition:transform .15s}
+.big:active{transform:scale(.97)}
+.big.g{background:linear-gradient(135deg,#1fc16b,#8be04e)}.big.b{background:linear-gradient(135deg,#3d8bff,#2cd0ff)}.big.s{background:var(--bd);color:var(--tx)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px;font-weight:700}
+input[type=text],input[type=search]{width:100%;padding:13px;border-radius:14px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+input:focus{outline:0;border-color:#3d8bff}
+.prev{width:100%;border-radius:14px;border:1px solid var(--bd);background:#fff;display:block}
+.row{display:flex;gap:8px;margin-top:12px}.row>*{flex:1}
+.note{font-size:13px;color:var(--mut);text-align:center;margin:8px 0}
+.busy{text-align:center;padding:14px;font-weight:700;color:#3d8bff}
+.spin{display:inline-block;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.item{display:flex;gap:12px;align-items:center;cursor:pointer}
+.item img{width:64px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--bd);background:#fff}
+.item b{display:block;font-size:16px}.item small{color:var(--mut);display:block;margin-top:3px}
+.stat{display:flex;gap:10px}.stat div{flex:1;text-align:center;border-radius:16px;padding:12px;color:#fff;font-weight:700}
+.stat span{display:block;font-size:26px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;z-index:9;max-width:90%}
+dialog{border:0;border-radius:20px;padding:14px;background:var(--card);color:var(--tx);width:min(92vw,500px)}
+dialog::backdrop{background:#000a}
+</style>
+</head>
+<body>
+<header><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
+<nav class="tabs">
+ <button class="tab t1 on" data-v="cap"><span class="i">📷</span>تصوير</button>
+ <button class="tab t2" data-v="srch"><span class="i">🔍</span>بحث</button>
+ <button class="tab t3" data-v="exp"><span class="i">📤</span>تصدير</button>
+ <button class="tab t4" data-v="all"><span class="i">📁</span>الأرشيف</button>
+</nav>
+<main>
+ <section id="cap">
+  <div class="card" id="capStart">
+   <button class="big" id="shoot">📷 التقط صورة المستند</button>
+   <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
+   <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
+  </div>
+  <div class="card hide" id="capForm">
+   <img class="prev" id="prev" alt="">
+   <div class="busy hide" id="busy"><span class="spin">⏳</span> الذكاء الاصطناعي يقرأ المستند...</div>
+   <label>اسم الناخب</label><input type="text" id="fName">
+   <label>رقم الناخب</label><input type="text" id="fNum" inputmode="numeric">
+   <label>اسم الموظف الذي سلّم البطاقة</label><input type="text" id="fEmp">
+   <div class="row"><button class="big g" id="save">💾 حفظ</button><button class="big s" id="cancel">إلغاء</button></div>
+  </div>
+ </section>
+ <section id="srch" class="hide">
+  <div class="card"><input type="search" id="q" placeholder="اكتب اسم الناخب..."></div>
+  <div id="sRes"></div>
+ </section>
+ <section id="exp" class="hide">
+  <div class="card"><div class="stat"><div style="background:#3d8bff"><span id="cnt">0</span>مستند</div><div style="background:#1fc16b"><span id="cnt2">0</span>صورة</div></div></div>
+  <div class="card">
+   <button class="big g" id="xl">📊 ملف الإكسل</button>
+   <div style="height:10px"></div>
+   <button class="big b" id="zp">🖼️ ملف الصور (ZIP)</button>
+   <p class="note">كل صورة باسم رقم الناخب. يُحفظ الملفان في جهازك.</p>
+  </div>
+ </section>
+ <section id="all" class="hide"><div id="aRes"></div></section>
+</main>
+<dialog id="dlg"></dialog>
+<input type="file" id="file" accept="image/*" capture="environment" class="hide">
+<script>
+(function(){"use strict";
+const $=s=>document.querySelector(s);
+let db,cur=null,sample=null,dl=null;
+/* ---------- IndexedDB ---------- */
+const openDb=()=>new Promise(r=>{try{const q=indexedDB.open("arch",1);q.onupgradeneeded=()=>q.result.createObjectStore("d",{keyPath:"id",autoIncrement:true});q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const mem=[];
+const all=()=>new Promise(r=>{if(!db)return r(mem.slice());const q=db.transaction("d").objectStore("d").getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>r([])});
+const put=o=>new Promise(r=>{if(!db){o.id=mem.length+1;mem.push(o);return r()}const q=db.transaction("d","readwrite").objectStore("d").add(o);q.onsuccess=()=>r();q.onerror=()=>r()});
+const del=id=>new Promise(r=>{if(!db){const i=mem.findIndex(x=>x.id==id);if(i>=0)mem.splice(i,1);return r()}const q=db.transaction("d","readwrite").objectStore("d").delete(id);q.onsuccess=()=>r()});
+/* ---------- UI ---------- */
+function toast(t){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2600)}
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x==b));["cap","srch","exp","all"].forEach(s=>$("#"+s).classList.toggle("hide",s!=b.dataset.v));if(b.dataset.v=="exp")stats();if(b.dataset.v=="all")list("#aRes",null);if(b.dataset.v=="srch")list("#sRes",$("#q").value)});
+const urlOf=b=>URL.createObjectURL(b);
+async function stats(){const a=await all();$("#cnt").textContent=a.length;$("#cnt2").textContent=a.length}
+async function list(sel,q){
+ let a=await all();a.reverse();q=(q||"").trim();
+ if(q)a=a.filter(x=>(x.name||"").includes(q));
+ const box=$(sel);box.innerHTML="";
+ if(!a.length){box.innerHTML='<p class="note">'+(q?"لا توجد نتائج":"لا توجد مستندات بعد")+'</p>';return}
+ a.forEach(x=>{const d=document.createElement("div");d.className="card item";
+  const im=document.createElement("img");im.src=urlOf(x.img);
+  const t=document.createElement("div");
+  t.innerHTML="<b></b><small></small><small></small>";
+  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");t.children[2].textContent="الموظف: "+(x.emp||"—");
+  d.append(im,t);d.onclick=()=>show(x);box.append(d)});
+}
+$("#q").oninput=e=>list("#sRes",e.target.value);
+function show(x){
+ const d=$("#dlg");d.innerHTML="";
+ const im=document.createElement("img");im.className="prev";im.src=urlOf(x.img);
+ const p=document.createElement("p");p.textContent=`${x.name||"—"} • ${x.num||"—"} • ${x.emp||"—"}`;
+ const r=document.createElement("div");r.className="row";
+ const c=document.createElement("button");c.className="big s";c.textContent="إغلاق";c.onclick=()=>d.close();
+ const k=document.createElement("button");k.className="big";k.textContent="🗑️ حذف";
+ k.onclick=async()=>{if(confirm("حذف هذا المستند؟")){await del(x.id);d.close();list("#aRes",null);list("#sRes",$("#q").value)}};
+ r.append(c,k);d.append(im,p,r);d.showModal();
+}
+/* ---------- Capture + crop ---------- */
+$("#shoot").onclick=()=>{$("#file").value="";$("#file").click()};
+$("#file").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ $("#capStart").classList.add("hide");$("#capForm").classList.remove("hide");
+ $("#busy").classList.remove("hide");["#fName","#fNum","#fEmp"].forEach(s=>$(s).value="");
+ const bmp=await createImageBitmap(f).catch(()=>null);
+ if(!bmp){toast("تعذّر فتح الصورة");reset();return}
+ const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+ const full=document.createElement("canvas");full.width=Math.round(bmp.width*sc);full.height=Math.round(bmp.height*sc);
+ full.getContext("2d").drawImage(bmp,0,0,full.width,full.height);
+ const box=findDoc(full);
+ const out=document.createElement("canvas");out.width=box.w;out.height=box.h;
+ const c=out.getContext("2d");c.filter="contrast(1.25) brightness(1.06) saturate(.85)";
+ c.drawImage(full,box.x,box.y,box.w,box.h,0,0,box.w,box.h);
+ const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
+ cur={img:blob};$("#prev").src=urlOf(blob);
+ await extract(blob);
+};
+function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر منطقة فاتحة عن الخلفية
+ const w=160,h=Math.round(160*cv.height/cv.width),t=document.createElement("canvas");t.width=w;t.height=h;
+ const g=t.getContext("2d");g.drawImage(cv,0,0,w,h);const d=g.getImageData(0,0,w,h).data,L=[];
+ for(let i=0;i<d.length;i+=4)L.push(.3*d[i]+.59*d[i+1]+.11*d[i+2]);
+ const hist=new Array(256).fill(0);L.forEach(v=>hist[v|0]++);
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,mx=0,th=128;
+ for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=L.length-wB;if(!wF)break;sB+=i*hist[i];const m=sB/wB-(sum-sB)/wF,v=wB*wF*m*m;if(v>mx){mx=v;th=i}}
+ let x0=w,y0=h,x1=0,y1=0,n=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(L[y*w+x]>th){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+ const bw=x1-x0,bh=y1-y0;
+ if(n<w*h*.15||bw<w*.4||bh<h*.4||bw*bh>w*h*.97)return{x:0,y:0,w:cv.width,h:cv.height};
+ const k=cv.width/w,m=2;
+ const X=Math.max(0,(x0+m)*k),Y=Math.max(0,(y0+m)*k);
+ return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
+}
+/* ---------- AI extraction ---------- */
+const P="هذه صورة مستند (بطاقة ناخب) باللغة العربية. استخرج: اسم الناخب الكامل، رقم الناخب (أرقام فقط)، واسم الموظف الذي سلّم البطاقة (يكون مكتوباً أسفل المستند). أعد JSON فقط بهذا الشكل: {\"voter_name\":\"\",\"voter_number\":\"\",\"employee_name\":\"\"}. اترك الحقل فارغاً إن لم تجده ولا تخمّن.";
+const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}};
+async function extract(blob){
+ try{
+  const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑 بالأسفل)");throw 0}
+  const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)});
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:400,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:P}]}]})});
+  const j=await res.json();if(!res.ok)throw 0;
+  const r=JSON.parse(j.content.map(c=>c.text||"").join("").replace(/```json|```/g,"").trim());
+  $("#fName").value=r.voter_name||"";$("#fNum").value=String(r.voter_number||"").replace(/\s/g,"");$("#fEmp").value=r.employee_name||"";
+  toast("تمت القراءة ✅ راجع البيانات");
+ }catch(e){toast("تعذّرت القراءة التلقائية، أدخل البيانات يدوياً")}
+ $("#busy").classList.add("hide");
+}
+function reset(){$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
+$("#cancel").onclick=reset;
+$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Anthropic API (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
+$("#save").onclick=async()=>{
+ const name=$("#fName").value.trim(),num=$("#fNum").value.trim(),emp=$("#fEmp").value.trim();
+ if(!num){toast("رقم الناخب مطلوب لتسمية الصورة");return}
+ await put({name,num,emp,img:cur.img,date:new Date().toLocaleString("ar-IQ")});
+ toast("تم الحفظ ✅");reset();
+};
+/* ---------- ZIP / XLSX (بدون مكتبات خارجية) ---------- */
+const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=u=>{let c=~0;for(let i=0;i<u.length;i++)c=CT[(c^u[i])&255]^(c>>>8);return~c>>>0};
+function zip(files){ // files:[{name,data:Uint8Array}] بدون ضغط
+ const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+ for(const f of files){
+  const nm=enc.encode(f.name),cr=crc(f.data),h=new DataView(new ArrayBuffer(30));
+  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint32(14,cr,true);h.setUint32(18,f.data.length,true);h.setUint32(22,f.data.length,true);h.setUint16(26,nm.length,true);
+  parts.push(new Uint8Array(h.buffer),nm,f.data);
+  const c=new DataView(new ArrayBuffer(46));
+  c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint32(16,cr,true);c.setUint32(20,f.data.length,true);c.setUint32(24,f.data.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+  cd.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+f.data.length;
+ }
+ let cs=0;cd.forEach(p=>cs+=p.length);
+ const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cd,new Uint8Array(e.buffer)],{type:"application/zip"});
+}
+const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+const fname=(x,used)=>{let b=(x.num||"بدون_رقم").replace(/[\\/:*?"<>|]/g,"_"),n=b,i=1;while(used.has(n))n=b+"_"+(++i);used.add(n);return n+".jpg"};
+async function share(blob,filename){
+ const l=document.createElement("a");l.href=urlOf(blob);l.download=filename;document.body.append(l);l.click();l.remove();toast("تم ✅");
+}
+async function cell(c,v){return `<c r="${c}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`}
+$("#xl").onclick=async()=>{
+ const a=await all();if(!a.length){toast("لا توجد بيانات");return}
+ const used=new Set(),H=["ت","اسم الناخب","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],col="ABCDEF";
+ let rows=`<row r="1">${H.map((h,i)=>`<c r="${col[i]}1" t="inlineStr"><is><t>${esc(h)}</t></is></c>`).join("")}</row>`;
+ a.forEach((x,i)=>{const r=i+2,v=[i+1,x.name,x.num,x.emp,x.date,fname(x,used)];
+  rows+=`<row r="${r}">${v.map((t,j)=>`<c r="${col[j]}${r}" t="inlineStr"><is><t>${esc(t)}</t></is></c>`).join("")}</row>`});
+ const X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',enc=new TextEncoder(),E=s=>enc.encode(s);
+ const z=zip([
+  {name:"[Content_Types].xml",data:E(X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>')},
+  {name:"_rels/.rels",data:E(X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')},
+  {name:"xl/workbook.xml",data:E(X+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="الأرشيف" sheetId="1" r:id="rId1"/></sheets></workbook>')},
+  {name:"xl/_rels/workbook.xml.rels",data:E(X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>')},
+  {name:"xl/worksheets/sheet1.xml",data:E(X+`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews><cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="4" width="28" customWidth="1"/><col min="5" max="6" width="22" customWidth="1"/></cols><sheetData>${rows}</sheetData></worksheet>`)}
+ ]);
+ share(new Blob([z],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"ارشيف_الناخبين.xlsx");
+};
+$("#zp").onclick=async()=>{
+ const a=await all();if(!a.length){toast("لا توجد صور");return}
+ const used=new Set(),fs=[];
+ for(const x of a)fs.push({name:"صور/"+fname(x,used),data:new Uint8Array(await x.img.arrayBuffer())});
+ share(zip(fs),"صور_المستندات.zip");
+};
+openDb().then(()=>stats());
+})();
+</script>
+</body>
+</html>
