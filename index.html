@@ -43,6 +43,12 @@ input:focus{outline:0;border-color:#3d8bff}
 .toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;z-index:9;max-width:90%}
 dialog{border:0;border-radius:20px;padding:14px;background:var(--card);color:var(--tx);width:min(92vw,500px)}
 dialog::backdrop{background:#000a}
+.gal{position:relative;margin-top:10px;background:linear-gradient(135deg,#9b5cff,#3d8bff)!important;overflow:visible}
+.sig{text-align:center;padding:26px 16px calc(34px + env(safe-area-inset-bottom,0px));direction:ltr}
+.sig i{display:block;width:90px;height:2px;margin:0 auto 14px;background:linear-gradient(90deg,transparent,#d4a017,transparent)}
+.sig small{display:block;font-family:Georgia,"Times New Roman",serif;font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--mut)}
+.sig b{display:block;margin-top:6px;font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,#b8860b,#f5d76e 45%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 1px 0 #0000}
+.sig em{display:block;margin-top:4px;font-family:Georgia,serif;font-style:normal;font-size:15px;letter-spacing:6px;color:#d4a017}
 </style>
 </head>
 <body>
@@ -57,6 +63,7 @@ dialog::backdrop{background:#000a}
  <section id="cap">
   <div class="card" id="capStart">
    <button class="big" id="shoot">📷 التقط صورة المستند</button>
+   <button class="big gal" id="gal">🖼️ اختر من الاستوديو</button>
    <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
    <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
   </div>
@@ -85,8 +92,10 @@ dialog::backdrop{background:#000a}
  </section>
  <section id="all" class="hide"><div id="aRes"></div></section>
 </main>
+<footer class="sig"><i></i><small>Designed by</small><b>Ahmed Fleih</b><em>2741</em></footer>
 <dialog id="dlg"></dialog>
 <input type="file" id="file" accept="image/*" capture="environment" class="hide">
+<input type="file" id="file2" accept="image/*" class="hide">
 <script>
 (function(){"use strict";
 const $=s=>document.querySelector(s);
@@ -127,7 +136,7 @@ function show(x){
 }
 /* ---------- Capture + crop ---------- */
 $("#shoot").onclick=()=>{$("#file").value="";$("#file").click()};
-$("#file").onchange=async e=>{
+const onPick=async e=>{
  const f=e.target.files[0];if(!f)return;
  $("#capStart").classList.add("hide");$("#capForm").classList.remove("hide");
  $("#busy").classList.remove("hide");["#fName","#fNum","#fEmp"].forEach(s=>$(s).value="");
@@ -144,6 +153,8 @@ $("#file").onchange=async e=>{
  cur={img:blob};$("#prev").src=urlOf(blob);
  await extract(blob);
 };
+$("#file").onchange=onPick;$("#file2").onchange=onPick;
+$("#gal").onclick=()=>{$("#file2").value="";$("#file2").click()};
 function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر منطقة فاتحة عن الخلفية
  const w=160,h=Math.round(160*cv.height/cv.width),t=document.createElement("canvas");t.width=w;t.height=h;
  const g=t.getContext("2d");g.drawImage(cv,0,0,w,h);const d=g.getImageData(0,0,w,h).data,L=[];
@@ -155,7 +166,7 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(L[y*w+x]>th){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
  const bw=x1-x0,bh=y1-y0;
  if(n<w*h*.15||bw<w*.4||bh<h*.4||bw*bh>w*h*.97)return{x:0,y:0,w:cv.width,h:cv.height};
- const k=cv.width/w,m=2;
+ const k=cv.width/w,m=-3;
  const X=Math.max(0,(x0+m)*k),Y=Math.max(0,(y0+m)*k);
  return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
 }
@@ -176,10 +187,19 @@ async function extract(blob){
     if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
     t=j.content.map(c=>c.text||"").join("");
    }else{
-    const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:{responseMimeType:"application/json"}})});
-    const j=await res.json().catch(()=>({}));
-    if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
-    t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+    const models=["gemini-flash-latest","gemini-2.5-flash","gemini-2.5-flash-lite"];
+    let last="",done=false;
+    for(let i=0;i<5&&!done;i++){
+     const md=models[i%models.length];
+     $("#busy").lastChild.textContent=" الذكاء الاصطناعي يقرأ المستند..."+(i?" (محاولة "+(i+1)+")":"");
+     const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:{responseMimeType:"application/json"}})});
+     const j=await res.json().catch(()=>({}));
+     if(res.ok){t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");done=true;break}
+     last="خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف");
+     if(![429,500,503,504].includes(res.status))break;
+     await new Promise(r=>setTimeout(r,1500*(i+1)));
+    }
+    if(!done){fail(last+" — الخدمة مشغولة، أعد التصوير بعد دقيقة أو أدخل البيانات يدوياً");$("#busy").classList.add("hide");return}
    }
   }catch(e){fail("فشل الاتصال بالإنترنت أو تم حظر الطلب: "+e.message);$("#busy").classList.add("hide");return}
   const m=t.match(/\{[\s\S]*\}/);if(!m){fail("رد غير متوقع: "+t.slice(0,150));$("#busy").classList.add("hide");return}
