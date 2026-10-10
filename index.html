@@ -50,8 +50,13 @@ dialog::backdrop{background:#000a}
 .sig b{display:block;margin-top:6px;font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,#b8860b,#f5d76e 45%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 1px 0 #0000}
 .sig em{display:block;margin-top:4px;font-family:Georgia,serif;font-style:normal;font-size:15px;letter-spacing:6px;color:#d4a017}
 .toast{white-space:pre-line;text-align:center;line-height:1.6}
-.item small.er{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
-.item .dt{font-size:10.5px;opacity:.85;white-space:nowrap}
+:root{--red:#d11a2a;--navy:#1e3a8a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#ff6b7a;--navy:#8fb3ff}}
+:root[data-theme="dark"]{--red:#ff6b7a;--navy:#8fb3ff}
+.item small.nv{color:var(--red);font-weight:700}
+.item small.em{color:var(--navy);font-weight:700}
+.item small.dt{color:var(--navy);font-size:12px;margin-top:4px}
+.item .trash{align-self:flex-start;margin-top:4px}
 .trash{border:0;background:#ffe3e8;color:#c0143c;border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer;flex:none;transition:transform .15s}
 .trash:active{transform:scale(.88)}
 .trash.all{width:auto;padding:0 14px;font:inherit;font-weight:700;font-size:14px}
@@ -133,8 +138,8 @@ async function list(sel,q){
  a.forEach(x=>{const d=document.createElement("div");d.className="card item";
   const im=document.createElement("img");im.src=urlOf(x.img);
   const t=document.createElement("div");
-  t.style.flex="1";t.style.minWidth="0";t.innerHTML='<b></b><small></small><small class="er"><span></span><span class="dt"></span></small>';
-  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");const er=t.children[2];er.children[0].textContent="الموظف: "+(x.emp||"—");er.children[1].textContent=x.ts?fmt(x.ts):toAr(x.date||"");
+  t.style.flex="1";t.style.minWidth="0";t.innerHTML='<b></b><small class="nv"></small><small class="em"></small><small class="dt"></small>';
+  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");t.children[2].textContent="الموظف: "+(x.emp||"—");t.children[3].textContent=x.ts?fmt(x.ts):toAr(x.date||"");
   const tb=document.createElement("button");tb.className="trash";tb.textContent="🗑️";tb.setAttribute("aria-label","حذف");
   tb.onclick=async ev=>{ev.stopPropagation();if(confirm("حذف مستند «"+(x.name||x.num||"")+"» نهائياً؟")){await del(x.id);list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم الحذف")}};
   d.append(im,t,tb);d.onclick=()=>show(x);box.append(d)});
