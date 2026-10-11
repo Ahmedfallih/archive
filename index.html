@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -84,7 +84,6 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
 .t2{--g1:#9bd6ff;--g2:#2f8cff;--sh:rgba(47,140,255,.6)}
 .t3{--g1:#c4f8de;--g2:#4fe0a0;--sh:rgba(30,190,125,.55)}
 .t4{--g1:#d6c2ff;--g2:#8a5cff;--sh:rgba(138,92,255,.6)}
-@media (prefers-reduced-motion:reduce){.tab.on::after{animation:none}.tab{transition:none}}
 
 /* gold camera + red launching arrow */
 .t1 .i svg{stroke:#5a3a00}
@@ -100,16 +99,31 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
  67%{transform:translateY(3px);opacity:0}
  82%{transform:translateY(0);opacity:1}
  100%{transform:translateY(0);opacity:1}}
-@media (prefers-reduced-motion:reduce){.t3.on .arr,.t3:hover .arr{animation:none}}
+:root{color-scheme:dark}
+
+/* per-icon motion: active tab (or hover on desktop) */
+.tab .i svg .dot{fill:#ff1f35;stroke:none;opacity:0}
+.t1.on .lens,.t1:hover .lens{animation:lensred 1s ease-in-out infinite}
+.t1.on .dot,.t1:hover .dot{animation:dotred 1s ease-in-out infinite}
+@keyframes lensred{0%,100%{stroke:#5a3a00;filter:none}50%{stroke:#ff1f35;filter:drop-shadow(0 0 3px #ff1f35)}}
+@keyframes dotred{0%,100%{opacity:0}50%{opacity:1;filter:drop-shadow(0 0 3px #ff1f35)}}
+.tab .i svg .mag{transform-origin:12px 12px}
+.t2.on .mag,.t2:hover .mag{animation:scan 1.8s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translate(-2.2px,1.4px) rotate(-16deg)}25%,75%{transform:translate(0,-2px) rotate(0)}50%{transform:translate(2.2px,1.4px) rotate(16deg)}}
+.tab .i svg .sh{fill:#fff;stroke:#2a2c4e;stroke-width:1.3;opacity:0}
+.t4.on .sh,.t4:hover .sh{animation:fdrop 1.8s ease-in infinite}
+.t4.on .sh.s2,.t4:hover .sh.s2{animation-delay:.6s}
+.t4.on .sh.s3,.t4:hover .sh.s3{animation-delay:1.2s}
+@keyframes fdrop{0%{transform:translateY(-3px);opacity:0}12%{opacity:1}68%{transform:translateY(11px);opacity:1}86%{transform:translateY(14px);opacity:0}100%{transform:translateY(14px);opacity:0}}
 </style>
 </head>
 <body>
 <header><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
 <nav class="tabs">
- <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg></span>تصوير</button>
- <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg></span>بحث</button>
+ <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle class="lens" cx="12" cy="13" r="3.6"/><circle class="dot" cx="12" cy="13" r="1.8"/></svg></span>تصوير</button>
+ <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><g class="mag"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></g></svg></span>بحث</button>
  <button class="tab t3" data-v="exp"><span class="i"><svg viewBox="0 0 24 24"><g class="arr"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/></g><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span>تصدير</button>
- <button class="tab t4" data-v="all"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>الأرشيف</button>
+ <button class="tab t4" data-v="all"><span class="i"><svg viewBox="0 0 24 24"><rect class="sh s1" x="5.5" y="1" width="5.5" height="7" rx="1"/><rect class="sh s2" x="9.5" y="1" width="5.5" height="7" rx="1"/><rect class="sh s3" x="13.5" y="1" width="5.5" height="7" rx="1"/><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>الأرشيف</button>
 </nav>
 <main>
  <section id="cap">
