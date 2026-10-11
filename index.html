@@ -81,7 +81,7 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
 .tab.on::after{content:"";position:absolute;z-index:-1;top:0;bottom:0;width:38%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-18deg);animation:shine 4.5s ease-in-out infinite}
 @keyframes shine{0%,55%{left:-60%}100%{left:130%}}
 .t1{--g1:#ffe27a;--g2:#e8a400;--sh:rgba(232,164,0,.6)}
-.t2{--g1:#9bd6ff;--g2:#2f8cff;--sh:rgba(47,140,255,.6)}
+.t2{--g1:#d3db84;--g2:#7d8b1f;--sh:rgba(125,139,31,.65)}
 .t3{--g1:#c4f8de;--g2:#4fe0a0;--sh:rgba(30,190,125,.55)}
 .t4{--g1:#d6c2ff;--g2:#8a5cff;--sh:rgba(138,92,255,.6)}
 
@@ -115,6 +115,11 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
 .t4.on .sh.s2,.t4:hover .sh.s2{animation-delay:.6s}
 .t4.on .sh.s3,.t4:hover .sh.s3{animation-delay:1.2s}
 @keyframes fdrop{0%{transform:translateY(-3px);opacity:0}12%{opacity:1}68%{transform:translateY(11px);opacity:1}86%{transform:translateY(14px);opacity:0}100%{transform:translateY(14px);opacity:0}}
+.warn{border-color:#ff9f1a!important;background:rgba(255,159,26,.14)!important}
+#hint{background:rgba(255,159,26,.16);color:#b45f00;border:1px solid #ffb347;border-radius:12px;padding:9px 12px;margin:8px 0;font-size:13px;line-height:1.6}
+:root[data-theme="dark"] #hint{color:#ffc46b}
+.tab .i svg .sh.s1{fill:#ff4d6d}.tab .i svg .sh.s2{fill:#ffd23f}.tab .i svg .sh.s3{fill:#2bd4c8}
+.tab .i svg .sh{stroke:#1f2350;stroke-width:1.2;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9))}
 </style>
 </head>
 <body>
@@ -136,6 +141,7 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
   <div class="card hide" id="capForm">
    <img class="prev" id="prev" alt="">
    <div id="err" class="hide" style="background:#ffe8e8;color:#a00;border-radius:12px;padding:10px;margin:8px 0;font-size:13px;direction:ltr;text-align:left;word-break:break-word"></div>
+   <div id="hint" class="hide"></div>
    <div class="busy hide" id="busy"><span class="spin">⏳</span> الذكاء الاصطناعي يقرأ المستند...</div>
    <label>اسم المستلم</label><input type="text" id="fName">
    <label>رقم الناخب</label><input type="text" id="fNum" inputmode="numeric">
@@ -144,7 +150,7 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
   </div>
  </section>
  <section id="srch" class="hide">
-  <div class="card"><input type="search" id="q" placeholder="اكتب اسم المستلم..."></div>
+  <div class="card"><input type="search" id="q" placeholder="اكتب اسم المستلم أو رقم الناخب أو الموظف..."><button class="big b" id="aiSearch" style="margin-top:10px;padding:12px;font-size:15px">🤖 بحث ذكي بالذكاء الاصطناعي</button></div>
   <div id="sRes"></div>
  </section>
  <section id="exp" class="hide">
@@ -181,12 +187,21 @@ const fmt=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,"0");let h=d.getHo
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x==b));["cap","srch","exp","all"].forEach(s=>$("#"+s).classList.toggle("hide",s!=b.dataset.v));if(b.dataset.v=="exp")stats();if(b.dataset.v=="all")list("#aRes",null);if(b.dataset.v=="srch")list("#sRes",$("#q").value)});
 const urlOf=b=>URL.createObjectURL(b);
 async function stats(){const a=await all();$("#cnt").textContent=a.length;$("#cnt2").textContent=a.length}
+let aiIds=null;
+const norm=s=>toEn(String(s||"")).toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/[ىیې]/g,"ي").replace(/ة/g,"ه").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/ک/g,"ك").replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
+const lev=(a,b,m)=>{const n=a.length,k=b.length;let p=Array.from({length:k+1},(_,j)=>j);for(let i=1;i<=n;i++){const c=[i];let mn=i;for(let j=1;j<=k;j++){const v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));c[j]=v;if(v<mn)mn=v}if(mn>m)return m+1;p=c}return p[k]};
+const tokScore=(q,h)=>{if(h===q)return 4;if(h.startsWith(q))return 3;if(h.includes(q))return 2;const m=q.length>=7?2:q.length>=4?1:0;return m&&Math.abs(h.length-q.length)<=m&&lev(q,h,m)<=m?1:0};
+const smart=(a,q)=>{const qt=norm(q).split(" ").filter(Boolean);if(!qt.length)return a;
+ return a.map(x=>{const h0=norm((x.name||"")+" "+(x.num||"")+" "+(x.emp||"")).split(" ").filter(Boolean),ht=h0.concat(h0.slice(1).map((t,i)=>h0[i]+t));let sc=0;
+  for(const t of qt){let best=0;for(const h of ht){best=Math.max(best,tokScore(t,h));if(best===4)break}if(!best)return null;sc+=best}
+  return{x,sc}}).filter(Boolean).sort((p,r)=>r.sc-p.sc||(r.x.ts||0)-(p.x.ts||0)).map(o=>o.x)};
 async function list(sel,q){
  let a=await all();a.reverse();
  if(sel==="#aRes"){$("#aCnt").textContent="عدد المستندات: "+toAr(a.length);$("#delAll").style.display=a.length?"":"none"}q=(q||"").trim();
- if(q)a=a.filter(x=>(x.name||"").includes(q));
+ if(sel==="#sRes"&&aiIds){const all0=a;a=aiIds.map(id=>all0.find(x=>x.id==id)).filter(Boolean)}else if(q)a=smart(a,q);
  const box=$(sel);box.innerHTML="";
- if(!a.length){box.innerHTML='<p class="note">'+(q?"لا توجد نتائج":"لا توجد مستندات بعد")+'</p>';return}
+ if(!a.length){box.innerHTML='<p class="note">'+(q||aiIds?"لا توجد نتائج"+(aiIds?"":" — جرّب «🤖 بحث ذكي» بالأسفل"):"لا توجد مستندات بعد")+'</p>';return}
+ if(sel==="#sRes"&&(q||aiIds))box.innerHTML='<p class="note">عدد النتائج: '+toAr(a.length)+(aiIds?" (بحث ذكي)":"")+'</p>';
  a.forEach(x=>{const d=document.createElement("div");d.className="card item";
   const im=document.createElement("img");im.src=urlOf(x.img);
   const t=document.createElement("div");
@@ -196,7 +211,23 @@ async function list(sel,q){
   tb.onclick=async ev=>{ev.stopPropagation();if(confirm("حذف مستند «"+(x.name||x.num||"")+"» نهائياً؟")){await del(x.id);list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم الحذف")}};
   d.append(im,t,tb);d.onclick=()=>show(x);box.append(d)});
 }
-$("#q").oninput=e=>list("#sRes",e.target.value);
+$("#q").oninput=e=>{aiIds=null;list("#sRes",e.target.value)};
+$("#aiSearch").onclick=async()=>{
+ const q=$("#q").value.trim();if(!q){toast("اكتب ما تبحث عنه أولاً");return}
+ const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑 بصفحة التصوير)");return}
+ const a=await all();if(!a.length){toast("لا توجد مستندات");return}
+ let ok=false;try{ok=localStorage.getItem("aiok")==="1"}catch(e){}
+ if(!ok){if(!confirm("للبحث الذكي سيتم إرسال أسماء وأرقام المستندات (بدون الصور) إلى خدمة الذكاء الاصطناعي. هل توافق؟"))return;try{localStorage.setItem("aiok","1")}catch(e){}}
+ const b=$("#aiSearch"),old=b.textContent;b.disabled=true;b.textContent="⏳ الذكاء الاصطناعي يبحث...";
+ try{
+  const rows=a.slice(-600).map(x=>x.id+"|"+(x.name||"")+"|"+(x.num||"")+"|"+(x.emp||"")).join("\n");
+  const p="لديك سجلات مستندات بصيغة: id|اسم المستلم|رقم الناخب|اسم الموظف.\n"+rows+"\n\nطلب البحث: «"+q+"»\nأعد أفضل السجلات المطابقة مع مراعاة اختلاف الإملاء (الهمزات، الياء والألف المقصورة، التاء المربوطة، الحروف الكردية)، وأخطاء القراءة الآلية في الحروف والأرقام، والأسماء الجزئية أو بترتيب مختلف، وأسماء الموظفين. أعد JSON فقط: {\"ids\":[...]} مرتبة من الأفضل، بحد أقصى 20، ومصفوفة فارغة إن لم يوجد شيء مناسب.";
+  const r=jsonOf(await aiCall(key,p,null));
+  aiIds=(Array.isArray(r.ids)?r.ids:[]).slice(0,20);
+  await list("#sRes",q);
+ }catch(e){toast("تعذّر البحث الذكي: "+String(e.message||e).slice(0,80))}
+ b.disabled=false;b.textContent=old;
+};
 $("#delAll").onclick=async()=>{const n=(await all()).length;if(!n)return;
  if(!confirm("⚠️ سيتم حذف كل المستندات ("+toAr(n)+") من هذا الجهاز نهائياً.\nتأكد أنك صدّرت نسخة احتياطية (📤 تصدير) قبل الحذف.\n\nهل تريد المتابعة؟"))return;
  if(!confirm("تأكيد أخير: حذف كل المستندات؟ لا يمكن التراجع."))return;
@@ -230,7 +261,7 @@ const onPick=async e=>{
  const kk=Math.min(1,1400/Math.max(out.width,out.height)),sm=document.createElement("canvas");sm.width=Math.round(out.width*kk);sm.height=Math.round(out.height*kk);sm.getContext("2d").drawImage(out,0,0,sm.width,sm.height);
  const small=await new Promise(r=>sm.toBlob(r,"image/jpeg",.78));
  cur={img:blob};$("#prev").src=urlOf(blob);
- await extract(small);
+ await extract(small,blob);
 };
 $("#file").onchange=onPick;$("#file2").onchange=onPick;
 $("#gal").onclick=()=>{$("#file2").value="";$("#file2").click()};
@@ -250,59 +281,71 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
  return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
 }
 /* ---------- AI extraction ---------- */
-const P="هذه استمارة تسليم بطاقات الناخبين الإلكترونية (عربي/كردي) فيها كتابة بخط اليد. استخرج بدقة: (1) اسم المستلم: الاسم المكتوب بخط اليد في حقل «اسم المستلم» أعلى الاستمارة. (2) رقم الناخب: الرقم المكتوب بخط اليد في حقل «رقم الناخب» تحديداً، وليس رقم البطاقة ولا رقم الوثيقة ولا الرقم التسلسلي الأحمر. (3) اسم الموظف: الاسم المكتوب بخط اليد بجانب «اسم موظف التسليم» أسفل الاستمارة، وليس اسم المستلم الثاني ولا التوقيع. أعد JSON فقط بهذا الشكل: {\"voter_name\":\"اسم المستلم\",\"voter_number\":\"\",\"employee_name\":\"\"}. اكتب الأسماء بالعربية، والأرقام بالإنجليزية 0-9. اترك الحقل فارغاً إن لم تكن متأكداً ولا تخمّن.";
+const P="هذه استمارة تسليم بطاقات الناخبين الإلكترونية (عربي/كردي) فيها كتابة بخط اليد وقد تكون الصورة مائلة أو مقلوبة فاقرأها بالاتجاه الصحيح. استخرج: (1) اسم المستلم: الاسم المكتوب في حقل «اسم المستلم» أعلى الاستمارة، وقارنه بالاسم المكرر في عمود «اسم صاحب البطاقة» بالجدول إن وُجد. (2) رقم الناخب: الرقم في حقل «رقم الناخب» تحديداً (وليس رقم البطاقة ولا رقم الوثيقة ولا الرقم التسلسلي الأحمر)، وقارنه بالرقم المكرر في عمود «رقم الناخب» بالجدول وأعد الأوضح، بأرقام إنجليزية 0-9 بلا فواصل. (3) اسم الموظف: الاسم المكتوب بجانب «اسم موظف التسليم» أسفل الاستمارة، وليس اسم المستلم الثاني ولا التوقيع. أعد JSON فقط: {\"voter_name\":\"\",\"voter_number\":\"\",\"employee_name\":\"\",\"uncertain\":[]}. ضع في uncertain أسماء الحقول التي لست متأكداً منها (voter_name أو voter_number أو employee_name). اترك الحقل فارغاً إن لم تجده ولا تخمّن.";
+const P2="ركّز فقط على «رقم الناخب» في هذه الاستمارة. ابحث عن حقل «رقم الناخب» وعن الرقم المكرر في الجدول أسفلها وقارن بينهما، وأعد الرقم الأوضح بأرقام إنجليزية 0-9 بلا فواصل. أعد JSON فقط: {\"voter_number\":\"\",\"uncertain\":false}";
 const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}};
 let att=1;
-async function extract(blob){
- att=1;const t0=Date.now(),iv=setInterval(()=>{const b=$("#busy");if(b&&b.lastChild)b.lastChild.textContent=" الذكاء الاصطناعي يقرأ المستند... "+toAr(Math.floor((Date.now()-t0)/1000))+" ث"+(att>1?" (محاولة "+toAr(att)+")":"")},400);
- try{await extractInner(blob)}finally{clearInterval(iv)}
+function jsonOf(t){const m=String(t).match(/\{[\s\S]*\}/);if(!m)throw new Error("رد غير متوقع: "+String(t).slice(0,150));return JSON.parse(m[0])}
+async function aiCall(key,prompt,blob){
+ const b64=blob?await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)}):null;
+ if(key.startsWith("sk-ant")){
+  const c=[];if(b64)c.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});c.push({type:"text",text:prompt});
+  const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:1024,messages:[{role:"user",content:c}]})});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));
+  return j.content.map(c=>c.text||"").join("");
+ }
+ let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
+ let dyn=[];
+ if(!cached){try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key));const lj=await lr.json();
+  dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){}}
+ const models=[...new Set([cached,"gemini-flash-latest",...dyn].filter(Boolean))].slice(0,5);
+ let thinkOff=true,last="";
+ for(let i=0;i<7;i++){
+  const md=models[i%models.length];att=i+1;
+  const parts=[];if(b64)parts.push({inline_data:{mime_type:"image/jpeg",data:b64}});parts.push({text:prompt});
+  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:1024},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
+  const j=await res.json().catch(()=>({}));
+  if(res.ok){try{localStorage.setItem("gm",md)}catch(e){}return((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("")}
+  last=md+" — خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف");
+  if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
+  if(res.status===404){if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
+  if(![429,500,503,504].includes(res.status))break;
+  await new Promise(r=>setTimeout(r,800*(i+1)));
+ }
+ throw new Error(last||"فشل الاتصال");
 }
-async function extractInner(blob){
- const er=$("#err");er.classList.add("hide");er.textContent="";
- const fail=m=>{er.textContent="⚠️ "+m;er.classList.remove("hide");toast("تعذّرت القراءة، أدخل البيانات يدوياً")};
+const WF={voter_name:"#fName",voter_number:"#fNum",employee_name:"#fEmp"};
+const clearWarn=()=>{Object.values(WF).forEach(k=>$(k).classList.remove("warn"));$("#hint").classList.add("hide")};
+Object.values(WF).forEach(k=>$(k).addEventListener("input",e=>e.target.classList.remove("warn")));
+async function extract(blob,full){
+ att=1;let stage="يقرأ المستند";
+ const t0=Date.now(),iv=setInterval(()=>{const b=$("#busy");if(b&&b.lastChild)b.lastChild.textContent=" الذكاء الاصطناعي "+stage+"... "+toAr(Math.floor((Date.now()-t0)/1000))+" ث"+(att>1?" (محاولة "+toAr(att)+")":"")},400);
+ const er=$("#err");er.classList.add("hide");er.textContent="";clearWarn();
  try{
-  const key=getKey();if(!key){fail("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح ");$("#busy").classList.add("hide");return}
-  const b64=await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)});
-  let t="";
-  try{
-   if(key.startsWith("sk-ant")){
-    const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:400,messages:[{role:"user",content:[{type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}},{type:"text",text:P}]}]})});
-    const j=await res.json().catch(()=>({}));
-    if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
-    t=j.content.map(c=>c.text||"").join("");
-   }else{
-    let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
-    let dyn=[];
-    if(!cached){
-     try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key));const lj=await lr.json();
-      dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){}
-    }
-    const models=[...new Set([cached,"gemini-flash-latest",...dyn].filter(Boolean))].slice(0,5);
-    let thinkOff=true;
-    let last="",done=false;
-    for(let i=0;i<7&&!done;i++){
-     const md=models[i%models.length];
-     att=i+1;
-     const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:1024},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
-     const j=await res.json().catch(()=>({}));
-     if(res.ok){t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");done=true;try{localStorage.setItem("gm",md)}catch(e){}break}
-     last=md+" — خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف");
-     if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
-     if(res.status===404){if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
-     if(![429,500,503,504].includes(res.status))break;
-     await new Promise(r=>setTimeout(r,800*(i+1)));
-    }
-    if(!done){fail(last+" — أعد التصوير بعد دقيقة أو أدخل البيانات يدوياً");$("#busy").classList.add("hide");return}
-   }
-  }catch(e){fail("فشل الاتصال بالإنترنت أو تم حظر الطلب: "+e.message);$("#busy").classList.add("hide");return}
-  const m=t.match(/\{[\s\S]*\}/);if(!m){fail("رد غير متوقع: "+t.slice(0,150));$("#busy").classList.add("hide");return}
-  const r=JSON.parse(m[0]);
-  $("#fName").value=r.voter_name||"";$("#fNum").value=String(r.voter_number||"").replace(/\s/g,"");$("#fEmp").value=r.employee_name||"";
-  toast("تمت القراءة ✅ راجع البيانات");
- }catch(e){fail(e.message||String(e))}
- $("#busy").classList.add("hide");
+  const key=getKey();if(!key)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
+  const r=jsonOf(await aiCall(key,P,blob));
+  const un=new Set(Array.isArray(r.uncertain)?r.uncertain:[]);
+  let num=toEn(r.voter_number||"").replace(/\D/g,"");
+  $("#fName").value=r.voter_name||"";$("#fEmp").value=r.employee_name||"";$("#fNum").value=num;
+  if(full&&(num.length<7||un.has("voter_number"))){ // تدقيق إضافي بصورة أعلى دقة
+   stage="يدقّق رقم الناخب";att=1;
+   try{const r2=jsonOf(await aiCall(key,P2,full));const n2=toEn(r2.voter_number||"").replace(/\D/g,"");
+    if(n2.length>=6){const first=num;num=n2;$("#fNum").value=num;if(n2===first||r2.uncertain!==true)un.delete("voter_number");else un.add("voter_number")}}catch(e){}
+  }
+  const msgs=[];
+  num=$("#fNum").value;
+  if(!num)msgs.push("لم يُقرأ رقم الناخب");
+  else if(num.length!==8){un.add("voter_number");msgs.push("رقم الناخب فيه "+toAr(num.length)+" أرقام، والأرقام اللي ظهرت بمستنداتك غالباً ٨")}
+  un.forEach(k=>{if(WF[k])$(WF[k]).classList.add("warn")});
+  if(un.size)msgs.push("الحقول البرتقالية غير مؤكدة، راجعها مع الصورة");
+  if(msgs.length){$("#hint").textContent="🟠 "+msgs.join(" • ");$("#hint").classList.remove("hide")}
+  toast(un.size||msgs.length?"تمت القراءة، راجع الحقول البرتقالية":"تمت القراءة ✅ راجع البيانات");
+ }catch(e){
+  er.textContent="⚠️ "+(e instanceof TypeError?"فشل الاتصال بالإنترنت أو تم حظر الطلب: ":"")+(e.message||e);er.classList.remove("hide");toast("تعذّرت القراءة، أدخل البيانات يدوياً");
+ }finally{clearInterval(iv);$("#busy").classList.add("hide")}
 }
-function reset(){$("#err").classList.add("hide");$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
+function reset(){$("#err").classList.add("hide");clearWarn();$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
 $("#cancel").onclick=reset;
 $("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Gemini المجاني أو Anthropic (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
 $("#save").onclick=async()=>{
