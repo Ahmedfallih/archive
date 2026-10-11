@@ -101,52 +101,15 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
  82%{transform:translateY(0);opacity:1}
  100%{transform:translateY(0);opacity:1}}
 @media (prefers-reduced-motion:reduce){.t3.on .arr,.t3:hover .arr{animation:none}}
-
-/* archive: papers slide into the folder on hover / focus / active */
-.t4 .pp{transform:translateY(11px)}
-.t4:hover .pp,.t4:focus-visible .pp,.t4.on .pp{animation:paperIn 2.6s cubic-bezier(.45,0,.55,1) infinite backwards}
-.t4 .p2{animation-delay:.35s!important}
-.t4 .p3{animation-delay:.7s!important}
-@keyframes paperIn{
- 0%{transform:translateY(-13px);opacity:0}
- 8%{opacity:1}
- 40%{transform:translateY(11px);opacity:1}
- 100%{transform:translateY(11px);opacity:1}}
-@media (prefers-reduced-motion:reduce){.t4:hover .pp,.t4:focus-visible .pp,.t4.on .pp{animation:none}}
-
-/* camera lens: red blink every second on hover / focus / active */
-.t1 .lens{fill:transparent}
-.t1:hover .lens,.t1:focus-visible .lens,.t1.on:hover .lens,.t1.on .lens{animation:lensBlink 1s steps(1,end) infinite}
-@keyframes lensBlink{
- 0%{fill:#ff1f3d;stroke:#ff1f3d;filter:drop-shadow(0 0 3px rgba(255,31,61,.95))}
- 50%{fill:transparent;stroke:#5a3a00;filter:none}
- 100%{fill:transparent;stroke:#5a3a00;filter:none}}
-
-@media (prefers-reduced-motion:reduce){.t1 .lens,.t2 .mag{animation:none!important}}
-
-/* search: whole magnifier (lens + handle) travels in a soft circle with a slight colour shift */
-.t2 .mlens{fill:transparent}
-.t2:hover .mag,.t2:focus-visible .mag,.t2.on .mag{animation:magOrbit 2.4s ease-in-out infinite}
-@keyframes magOrbit{
- 0%{transform:translate(0,0);stroke:#2a2c4e}
- 25%{transform:translate(1.8px,-1.8px);stroke:#1747b8}
- 50%{transform:translate(0,-2.6px);stroke:#0d6efd}
- 75%{transform:translate(-1.8px,-1.8px);stroke:#1747b8}
- 100%{transform:translate(0,0);stroke:#2a2c4e}}
-
-/* ===== Always-dark theme (independent of device setting) ===== */
-:root,:root[data-theme="light"]{color-scheme:dark;--bg:#12152b;--card:#1e2240;--tx:#eef0ff;--mut:#a3a9cc;--bd:#32386388;--red:#ff6b7a;--navy:#8fb3ff}
-body,:root[data-theme="light"] body{background:linear-gradient(165deg,#0e1830 0%,#112338 55%,#0f2a30 100%) fixed}
-.trash,:root[data-theme="light"] .trash{background:#3a1f2b;color:#ff8aa5}
 </style>
 </head>
 <body>
 <header><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
 <nav class="tabs">
- <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle class="lens" cx="12" cy="13" r="3.6"/></svg></span>تصوير</button>
- <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><g class="mag"><circle class="mlens" cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></g></svg></span>بحث</button>
+ <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13" r="3.6"/></svg></span>تصوير</button>
+ <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></svg></span>بحث</button>
  <button class="tab t3" data-v="exp"><span class="i"><svg viewBox="0 0 24 24"><g class="arr"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/></g><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span>تصدير</button>
- <button class="tab t4" data-v="all"><span class="i"><svg viewBox="0 0 24 24"><defs><clipPath id="fclip"><rect x="0" y="-12" width="24" height="22"/></clipPath></defs><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><g clip-path="url(#fclip)" stroke-width="1.3"><g class="pp p1"><rect x="5.5" y="0" width="13" height="9" rx="1" fill="#fff"/><path d="M8 3h8M8 5.6h5"/></g><g class="pp p2"><rect x="8" y="0" width="10" height="9" rx="1" fill="#fff4c9"/><path d="M10.3 3h5.4M10.3 5.6h3.4"/></g><g class="pp p3"><rect x="6.5" y="0" width="11" height="9" rx="1" fill="#e4f1ff"/><path d="M9 3h6M9 5.6h4"/></g></g><path d="M3 10h18"/></svg></span>الأرشيف</button>
+ <button class="tab t4" data-v="all"><span class="i"><svg viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>الأرشيف</button>
 </nav>
 <main>
  <section id="cap">
@@ -250,8 +213,10 @@ const onPick=async e=>{
  const c=out.getContext("2d");c.filter="contrast(1.25) brightness(1.06) saturate(.85)";
  c.drawImage(full,box.x,box.y,box.w,box.h,0,0,box.w,box.h);
  const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
+ const kk=Math.min(1,1400/Math.max(out.width,out.height)),sm=document.createElement("canvas");sm.width=Math.round(out.width*kk);sm.height=Math.round(out.height*kk);sm.getContext("2d").drawImage(out,0,0,sm.width,sm.height);
+ const small=await new Promise(r=>sm.toBlob(r,"image/jpeg",.78));
  cur={img:blob};$("#prev").src=urlOf(blob);
- await extract(blob);
+ await extract(small);
 };
 $("#file").onchange=onPick;$("#file2").onchange=onPick;
 $("#gal").onclick=()=>{$("#file2").value="";$("#file2").click()};
@@ -273,7 +238,12 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
 /* ---------- AI extraction ---------- */
 const P="هذه استمارة تسليم بطاقات الناخبين الإلكترونية (عربي/كردي) فيها كتابة بخط اليد. استخرج بدقة: (1) اسم المستلم: الاسم المكتوب بخط اليد في حقل «اسم المستلم» أعلى الاستمارة. (2) رقم الناخب: الرقم المكتوب بخط اليد في حقل «رقم الناخب» تحديداً، وليس رقم البطاقة ولا رقم الوثيقة ولا الرقم التسلسلي الأحمر. (3) اسم الموظف: الاسم المكتوب بخط اليد بجانب «اسم موظف التسليم» أسفل الاستمارة، وليس اسم المستلم الثاني ولا التوقيع. أعد JSON فقط بهذا الشكل: {\"voter_name\":\"اسم المستلم\",\"voter_number\":\"\",\"employee_name\":\"\"}. اكتب الأسماء بالعربية، والأرقام بالإنجليزية 0-9. اترك الحقل فارغاً إن لم تكن متأكداً ولا تخمّن.";
 const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}};
+let att=1;
 async function extract(blob){
+ att=1;const t0=Date.now(),iv=setInterval(()=>{const b=$("#busy");if(b&&b.lastChild)b.lastChild.textContent=" الذكاء الاصطناعي يقرأ المستند... "+toAr(Math.floor((Date.now()-t0)/1000))+" ث"+(att>1?" (محاولة "+toAr(att)+")":"")},400);
+ try{await extractInner(blob)}finally{clearInterval(iv)}
+}
+async function extractInner(blob){
  const er=$("#err");er.classList.add("hide");er.textContent="";
  const fail=m=>{er.textContent="⚠️ "+m;er.classList.remove("hide");toast("تعذّرت القراءة، أدخل البيانات يدوياً")};
  try{
@@ -287,21 +257,26 @@ async function extract(blob){
     if(!res.ok){fail("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));$("#busy").classList.add("hide");return}
     t=j.content.map(c=>c.text||"").join("");
    }else{
+    let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
     let dyn=[];
-    try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key));const lj=await lr.json();
-     dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){}
-    const models=[...new Set(["gemini-flash-latest",...dyn])].slice(0,5);
+    if(!cached){
+     try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key));const lj=await lr.json();
+      dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){}
+    }
+    const models=[...new Set([cached,"gemini-flash-latest",...dyn].filter(Boolean))].slice(0,5);
+    let thinkOff=true;
     let last="",done=false;
     for(let i=0;i<7&&!done;i++){
      const md=models[i%models.length];
-     $("#busy").lastChild.textContent=" الذكاء الاصطناعي يقرأ المستند..."+(i?" (محاولة "+(i+1)+")":"");
-     const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:{responseMimeType:"application/json"}})});
+     att=i+1;
+     const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts:[{inline_data:{mime_type:"image/jpeg",data:b64}},{text:P}]}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:1024},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
      const j=await res.json().catch(()=>({}));
-     if(res.ok){t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");done=true;break}
+     if(res.ok){t=((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("");done=true;try{localStorage.setItem("gm",md)}catch(e){}break}
      last=md+" — خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف");
-     if(res.status===404){continue}
+     if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
+     if(res.status===404){if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
      if(![429,500,503,504].includes(res.status))break;
-     await new Promise(r=>setTimeout(r,1500*(i+1)));
+     await new Promise(r=>setTimeout(r,800*(i+1)));
     }
     if(!done){fail(last+" — أعد التصوير بعد دقيقة أو أدخل البيانات يدوياً");$("#busy").classList.add("hide");return}
    }
