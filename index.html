@@ -157,6 +157,7 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
   <div class="card" id="capStart">
    <button class="big" id="shoot">📷 التقط صورة المستند</button>
    <button class="big gal" id="gal">🖼️ اختر من الاستوديو (صورة أو عدة صور)</button>
+   <button class="big s" id="keyBtn2" style="margin-top:8px;padding:10px;font-size:14px">🔑 مفتاح احتياطي (اختياري)</button>
    <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
    <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
   </div>
@@ -326,17 +327,19 @@ async function compressForAI(src,maxDim=1600,q=.75){ // ضغط وتصغير بج
  const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);
  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",q));c.width=0;return blob;
 }
-const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}};
+const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}};
+const getKeys=()=>[...new Set([lsGet("ak"),lsGet("ak2")].filter(Boolean))];
+const getKey=()=>getKeys()[0]||"";
 let att=1;
 function jsonOf(t){const m=String(t).match(/\{[\s\S]*\}/);if(!m)throw new Error("رد غير متوقع: "+String(t).slice(0,150));return JSON.parse(m[0])}
-async function aiCall(key,prompt,blob,signal){
+async function aiOne(key,prompt,blob,signal){
  const fx=async(u,o)=>{for(let k=0;;k++){try{return await fetch(u,o)}catch(e){if((e&&e.name==="AbortError")||k>=2)throw e;await sleep(1200*(k+1),signal)}}};
  const b64=blob?await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)}):null;
  if(key.startsWith("sk-ant")){
   const c=[];if(b64)c.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});c.push({type:"text",text:prompt});
   const res=await fx("https://api.anthropic.com/v1/messages",{signal,method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,messages:[{role:"user",content:c}]})});
   const j=await res.json().catch(()=>({}));
-  if(!res.ok)throw new Error("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));
+  if(!res.ok){const m0=(j.error&&j.error.message)||"غير معروف",e=new Error("خطأ "+res.status+": "+m0);if(res.status===401||res.status===403)e.badKey=true;if(res.status===429||/credit balance/i.test(m0))e.quota=true;throw e}
   return j.content.map(c=>c.text||"").join("");
  }
  let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
@@ -358,6 +361,7 @@ async function aiCall(key,prompt,blob,signal){
   const j=await res.json().catch(()=>({}));
   if(res.ok){try{localStorage.setItem("gm",md)}catch(e){}return((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("")}
   const msg=(j.error&&j.error.message)||"غير معروف";last=md+" — خطأ "+res.status+": "+msg;
+  if([400,401,403].includes(res.status)&&/api key|API_KEY|unauthenticated|permission denied|not valid/i.test(msg)){const e=new Error("المفتاح غير صالح أو غير مفعّل: "+msg.slice(0,90));e.badKey=true;throw e}
   if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
   if(res.status===404){kill(md,6*3600e3);if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
   if(res.status===429){
@@ -371,6 +375,17 @@ async function aiCall(key,prompt,blob,signal){
  if(ds.length&&ds.length===order.length){const h=Math.max(1,Math.round(Math.max(...ds.map(x=>x.r))/3600e3));
   const e=new Error("انتهى الحد المجاني اليومي لنماذج Gemini على هذا المفتاح، ويتجدد بعد حوالي "+toAr(h)+" ساعة. الحل: انتظر، أو فعّل الفوترة من Google AI Studio، أو استخدم مفتاحاً آخر.");e.quota=true;throw e}
  throw new Error(last||"فشل الاتصال");
+}
+/* يجرّب المفاتيح بالترتيب: ينتقل للاحتياطي عند انتهاء الحصة أو عدم صلاحية المفتاح */
+async function aiCall(_k,prompt,blob,signal){
+ const keys=getKeys();if(!keys.length)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
+ let last;
+ for(const k of keys){
+  try{return await aiOne(k,prompt,blob,signal)}
+  catch(e){if(e&&e.name==="AbortError")throw e;last=e;if(e&&(e.quota||e.badKey))continue;throw e}
+ }
+ if(keys.length>1&&last)last.message=(last.quota?"انتهت حصة كل المفاتيح المحفوظة. ":"")+last.message;
+ throw last;
 }
 const WF={voter_name:"#fName",voter_number:"#fNum",employee_name:"#fEmp",phone:"#fPhone"};
 let ftype="deliv",chipSt="manual";
@@ -424,7 +439,9 @@ async function extract(blob,full){
 }
 function reset(){curItem=null;setTimeout(renderBatch,0);$("#err").classList.add("hide");clearWarn();$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
 $("#cancel").onclick=reset;
-$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Gemini المجاني أو Anthropic (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());localStorage.removeItem("gdead");toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
+$("#keyBtn2").onclick=()=>{const k=prompt("الصق المفتاح الاحتياطي. يُستخدم تلقائياً إذا انتهت حصة الأساسي أو لم يعمل. اتركه فارغاً لحذفه:",lsGet("ak2"));
+ if(k!==null){try{if(k.trim())localStorage.setItem("ak2",k.trim());else localStorage.removeItem("ak2");localStorage.removeItem("gdead");toast(k.trim()?"تم حفظ المفتاح الاحتياطي ✅":"تم حذف المفتاح الاحتياطي")}catch(e){toast("تعذّر الحفظ")}}};
+$("#keyBtn").onclick=()=>{const k=prompt("الصق المفتاح الأساسي (Gemini أو Anthropic). يُحفظ على هذا الجهاز فقط:",lsGet("ak"));if(k!==null){try{localStorage.setItem("ak",k.trim());localStorage.removeItem("gdead");toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
 $("#save").onclick=async()=>{
  const t=ftype,name=$("#fName").value.trim(),num=toEn($("#fNum").value).replace(/\s/g,""),emp=t==="deliv"?$("#fEmp").value.trim():"",phone=t==="bio"?toEn($("#fPhone").value).replace(/\D/g,""):"";
  if(!num){toast("رقم الناخب مطلوب لتسمية الصورة");return}
