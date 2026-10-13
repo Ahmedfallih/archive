@@ -160,7 +160,7 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
    <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
    <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
   </div>
-  <div class="card hide" id="batchCard"><b id="bTitle" style="font-size:16px"></b><div class="pbar"><i id="bFill"></i></div><div id="bStats" class="note" style="line-height:1.9"></div><button class="big s" id="bStop" style="padding:10px;font-size:14px">⏹ إيقاف الدفعة</button><div id="bList"></div></div>
+  <div class="card hide" id="batchCard"><b id="bTitle" style="font-size:16px"></b><div class="pbar"><i id="bFill"></i></div><div id="bStats" class="note" style="line-height:1.9"></div><div id="bNote" class="note" style="color:#ffb347;display:none;line-height:1.7"></div><button class="big s" id="bRetry" style="padding:10px;font-size:14px;margin-bottom:8px;display:none">🔁 أعد كل المستندات الفاشلة</button><button class="big s" id="bStop" style="padding:10px;font-size:14px">⏹ إيقاف الدفعة</button><div id="bList"></div></div>
   <div class="card hide" id="capForm">
    <img class="prev" id="prev" alt="">
    <div id="err" class="hide" style="background:#ffe8e8;color:#a00;border-radius:12px;padding:10px;margin:8px 0;font-size:13px;direction:ltr;text-align:left;word-break:break-word"></div>
@@ -213,7 +213,7 @@ const fmt=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,"0");let h=d.getHo
 document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x==b));["cap","srch","exp","all"].forEach(s=>$("#"+s).classList.toggle("hide",s!=b.dataset.v));if(b.dataset.v=="exp")stats();if(b.dataset.v=="all")list("#aRes",null);if(b.dataset.v=="srch")list("#sRes",$("#q").value)});
 const urlOf=b=>URL.createObjectURL(b);
 async function stats(){const a=await all();$("#cnt").textContent=a.length;$("#cnt2").textContent=a.length}
-const FT={deliv:{label:"تسليم بطاقة",ico:"📄",nameL:"اسم المستلم",sheet:"تسليم البطاقات",dir:"تسليم_البطاقات"},bio:{label:"تسجيل بايومتري",ico:"🧬",nameL:"اسم الناخب",sheet:"التسجيل البايومتري",dir:"التسجيل_البايومتري"}};
+const FT={deliv:{label:"تسليم بطاقة",ico:"📄",nameL:"اسم المستلم",sheet:"تسليم البطاقات",dir:"تسليم_البطاقات"},bio:{label:"تسجيل بايومتري",ico:"🧬",nameL:"اسم الناخب واسم الأب",sheet:"التسجيل البايومتري",dir:"التسجيل_البايومتري"}};
 const tyOf=x=>x.type==="bio"?"bio":"deliv";
 const third=x=>tyOf(x)==="bio"?x.phone:x.emp;
 let aiIds=null;
@@ -314,7 +314,7 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
 const P=`Iraqi voter form (Arabic/Kurdish, handwritten; image may be rotated). Reply JSON only: {"t":"","n":"","v":"","e":"","p":"","u":[]}
 t: "d" if title is «استمارة تسليم بطاقات الناخبين الإلكترونية», "b" if «استمارة التسجيل البايومتري».
 d: n=«اسم المستلم» at top (cross-check with table column «اسم صاحب البطاقة»); v=«رقم الناخب» field only (NOT card no., doc no., red serial; cross-check with table); e=name beside «اسم موظف التسليم» at bottom (not signature).
-b: n=«اسم الناخب» first name only; v=digits in the boxes beside «رقم الناخب»; p=«رقم هاتف الناخب».
+b: n=«اسم الناخب» followed by «اسم الأب» (two names joined by one space: voter first, father second; do NOT add grandfather or surname); v=digits in the boxes beside «رقم الناخب»; p=«رقم هاتف الناخب».
 Digits 0-9 only, no spaces. u=list of keys among n,v,e,p you are unsure of. Empty string if absent; never guess.`;
 const P2=`Iraqi voter form. Read ONLY «رقم الناخب» (compare the field with the repeated number in the table below). Reply JSON only: {"v":"digits 0-9 only","u":false}. u=true if unsure.`;
 const compact=r=>{if(r.form_type!==undefined||r.voter_number!==undefined)return r;const m={n:"voter_name",v:"voter_number",e:"employee_name",p:"phone"};
@@ -330,32 +330,46 @@ const getKey=()=>{try{return localStorage.getItem("ak")||""}catch(e){return ""}}
 let att=1;
 function jsonOf(t){const m=String(t).match(/\{[\s\S]*\}/);if(!m)throw new Error("رد غير متوقع: "+String(t).slice(0,150));return JSON.parse(m[0])}
 async function aiCall(key,prompt,blob,signal){
+ const fx=async(u,o)=>{for(let k=0;;k++){try{return await fetch(u,o)}catch(e){if((e&&e.name==="AbortError")||k>=2)throw e;await sleep(1200*(k+1),signal)}}};
  const b64=blob?await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)}):null;
  if(key.startsWith("sk-ant")){
   const c=[];if(b64)c.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});c.push({type:"text",text:prompt});
-  const res=await fetch("https://api.anthropic.com/v1/messages",{signal,method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,messages:[{role:"user",content:c}]})});
+  const res=await fx("https://api.anthropic.com/v1/messages",{signal,method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,messages:[{role:"user",content:c}]})});
   const j=await res.json().catch(()=>({}));
   if(!res.ok)throw new Error("خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف"));
   return j.content.map(c=>c.text||"").join("");
  }
  let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
- let dyn=[];
- if(!cached){try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key),{signal});const lj=await lr.json();
-  dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){}}
- const models=[...new Set([cached,"gemini-flash-latest",...dyn].filter(Boolean))].slice(0,5);
- let thinkOff=true,last="";
- for(let i=0;i<7;i++){
-  const md=models[i%models.length];att=i+1;
+ const kid=key.slice(-8);let dead={};try{dead=JSON.parse(localStorage.getItem("gdead")||"{}")}catch(e){}
+ const alive=m=>!(dead[kid+"|"+m]&&dead[kid+"|"+m].u>Date.now());
+ const kill=(m,ms)=>{dead[kid+"|"+m]={u:Date.now()+Math.min(ms,2*3600e3),r:ms};try{localStorage.setItem("gdead",JSON.stringify(dead))}catch(e){}};
+ let order=[...new Set([cached,"gemini-flash-latest"].filter(Boolean))],loaded=false,thinkOff=true,last="";
+ const extend=async()=>{loaded=true;let dyn=[];
+  try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key),{signal});const lj=await lr.json();
+   dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){if(e&&e.name==="AbortError")throw e}
+  order=[...new Set([...order,...dyn,"gemini-flash-lite-latest"])].slice(0,7)};
+ for(let i=0;i<14;i++){
+  let cand=order.filter(alive);
+  if(!cand.length&&!loaded){await extend();cand=order.filter(alive)}
+  if(!cand.length)break;
+  const md=cand[i%cand.length];att=i+1;
   const parts=[];if(b64)parts.push({inline_data:{mime_type:"image/jpeg",data:b64}});parts.push({text:prompt});
-  const res=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{signal,method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:512},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
+  const res=await fx("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{signal,method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:512},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
   const j=await res.json().catch(()=>({}));
   if(res.ok){try{localStorage.setItem("gm",md)}catch(e){}return((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("")}
-  last=md+" — خطأ "+res.status+": "+((j.error&&j.error.message)||"غير معروف");
+  const msg=(j.error&&j.error.message)||"غير معروف";last=md+" — خطأ "+res.status+": "+msg;
   if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
-  if(res.status===404){if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
-  if(![429,500,503,504].includes(res.status))break;
+  if(res.status===404){kill(md,6*3600e3);if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
+  if(res.status===429){
+   const m=/retry in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?/i.exec(msg),ms=m?((+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0))*1000:0;
+   if(ms>120000||/free_tier|PerDay|per day/i.test(msg)){kill(md,ms||6*3600e3);continue} // حصة يومية: انتقل لنموذج آخر فوراً
+   await sleep(Math.min(ms||2000,20000),signal);continue}
+  if(![500,503,504].includes(res.status))break;
   await sleep(800*(i+1),signal);
  }
+ const ds=order.map(m=>dead[kid+"|"+m]).filter(x=>x&&x.u>Date.now());
+ if(ds.length&&ds.length===order.length){const h=Math.max(1,Math.round(Math.max(...ds.map(x=>x.r))/3600e3));
+  const e=new Error("انتهى الحد المجاني اليومي لنماذج Gemini على هذا المفتاح، ويتجدد بعد حوالي "+toAr(h)+" ساعة. الحل: انتظر، أو فعّل الفوترة من Google AI Studio، أو استخدم مفتاحاً آخر.");e.quota=true;throw e}
  throw new Error(last||"فشل الاتصال");
 }
 const WF={voter_name:"#fName",voter_number:"#fNum",employee_name:"#fEmp",phone:"#fPhone"};
@@ -398,6 +412,7 @@ async function extract(blob,full){
   num=$("#fNum").value;
   if(!num)msgs.push("لم يُقرأ رقم الناخب");
   else if(num.length!==8){un.add("voter_number");msgs.push("رقم الناخب فيه "+toAr(num.length)+" أرقام، والأرقام اللي ظهرت بمستنداتك غالباً ٨")}
+  if(ftype==="bio"&&$("#fName").value.trim()&&$("#fName").value.trim().split(/\s+/).length<2){un.add("voter_name");msgs.push("اسم الأب غير مقروء، أضفه بعد اسم الناخب")}
   if(ftype==="bio"&&ph&&ph.length!==11){un.add("phone");msgs.push("رقم الهاتف فيه "+toAr(ph.length)+" أرقام، وأرقام الموبايل عادةً ١١")}
   un.forEach(k=>{if(WF[k])$(WF[k]).classList.add("warn")});
   if(un.size)msgs.push("الحقول البرتقالية غير مؤكدة، راجعها مع الصورة");
@@ -409,7 +424,7 @@ async function extract(blob,full){
 }
 function reset(){curItem=null;setTimeout(renderBatch,0);$("#err").classList.add("hide");clearWarn();$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
 $("#cancel").onclick=reset;
-$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Gemini المجاني أو Anthropic (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
+$("#keyBtn").onclick=()=>{const k=prompt("الصق مفتاح Gemini المجاني أو Anthropic (يُحفظ على هذا الجهاز فقط):",getKey());if(k!==null){try{localStorage.setItem("ak",k.trim());localStorage.removeItem("gdead");toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
 $("#save").onclick=async()=>{
  const t=ftype,name=$("#fName").value.trim(),num=toEn($("#fNum").value).replace(/\s/g,""),emp=t==="deliv"?$("#fEmp").value.trim():"",phone=t==="bio"?toEn($("#fPhone").value).replace(/\D/g,""):"";
  if(!num){toast("رقم الناخب مطلوب لتسمية الصورة");return}
@@ -446,7 +461,7 @@ async function cell(c,v){return `<c r="${c}" t="inlineStr"><is><t>${esc(v)}</t><
 $("#xl").onclick=async()=>{
  const a=await all();if(!a.length){toast("لا توجد بيانات");return}
  const col="ABCDEF",X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',enc=new TextEncoder(),E=q=>enc.encode(q);
- const heads={deliv:["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],bio:["ت","اسم الناخب","رقم الناخب","رقم الهاتف","تاريخ الأرشفة","اسم ملف الصورة"]};
+ const heads={deliv:["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],bio:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم الهاتف","تاريخ الأرشفة","اسم ملف الصورة"]};
  const used={},byT={deliv:[],bio:[]};
  for(const x of a){const t=tyOf(x);used[t]=used[t]||new Set();byT[t].push([x.name,x.num,third(x),x.date,fname(x,used[t])])}
  const sheets=["deliv","bio"].filter(t=>byT[t].length).map(t=>{
@@ -473,7 +488,7 @@ $("#zp").onclick=async()=>{
 
 /* ---------- دفعة مستندات ---------- */
 let bItems=[],bRun=false,bStop=false,curItem=null,dbLock=Promise.resolve();
-const PAR=3;let par=PAR,ctl=null;
+const PAR=3;let par=PAR,ctl=null,bMsg="",netFails=0;
 const withLock=fn=>{const p=dbLock.then(fn);dbLock=p.catch(()=>{});return p};
 const BL={voter_name:"الاسم",voter_number:"رقم الناخب",employee_name:"اسم الموظف",phone:"الهاتف"};
 async function prepImage(f){
@@ -501,6 +516,7 @@ async function readDoc(key,small,full,signal){
  if(!name)hard.push("الاسم غير مقروء");
  ["voter_name","employee_name","phone"].forEach(k=>{if(un.has(k)&&!(k==="voter_name"&&!name))soft.push(BL[k]+" غير مؤكد")});
  if(type==="deliv"&&!emp)soft.push("اسم الموظف غير مقروء");
+ if(type==="bio"&&name&&name.split(/\s+/).length<2)soft.push("اسم الأب غير مقروء");
  if(type==="bio"&&phone&&phone.length!==11)soft.push("الهاتف "+toAr(phone.length)+" رقماً");
  return{type,name,num,emp,phone,un,hard,soft};
 }
@@ -509,7 +525,7 @@ async function procItem(it,key,signal){
  try{
   const pr=await prepImage(it.f);it.blob=pr.blob;it.url=urlOf(pr.blob);
   let r,tries=0;
-  for(;;){try{r=await readDoc(key,pr.small,pr.blob,signal);break}catch(e){if(/429/.test(e.message)&&tries++<2&&!bStop){par=Math.max(1,par-1);await sleep(20000,signal);continue}throw e}}
+  for(;;){try{r=await readDoc(key,pr.small,pr.blob,signal);netFails=0;break}catch(e){if(e&&e.quota)throw e;if(/429/.test(e.message)&&tries++<2&&!bStop){par=Math.max(1,par-1);await sleep(20000,signal);continue}throw e}}
   Object.assign(it,{detected:!!r.type,type:r.type||ftype,name:r.name,num:r.num,emp:r.emp,phone:r.phone,un:r.un,why:r.hard.concat(r.soft)});
   if(r.hard.length){it.st="review";return}
   const flag=r.soft.join("، "),now=Date.now();
@@ -518,13 +534,15 @@ async function procItem(it,key,signal){
    await put({type:it.type,name:it.name,num:it.num,emp:it.type==="deliv"?it.emp:"",phone:it.type==="bio"?it.phone:"",img:pr.blob,ts:now,date:fmt(now),flag});return null});
   if(dupe){it.st="dup";it.why=["محفوظة سابقاً: "+(dupe.name||"")+" — "+(dupe.ts?fmt(dupe.ts):toAr(dupe.date||""))];return}
   it.st="ok";it.flag=flag;it.blob=null;if(it.url){URL.revokeObjectURL(it.url);it.url=null}
- }catch(e){it.st="fail";it.why=[e&&e.name==="AbortError"?"أُوقفت الدفعة":String(e.message||e).slice(0,110)]}
+ }catch(e){it.st="fail";it.why=[e&&e.name==="AbortError"?"أُوقفت الدفعة":String(e.message||e).slice(0,160)];
+  if(e&&e.quota){bMsg="⛔ "+e.message+" تُركت بقية المستندات للإعادة.";bStop=true}
+  else if(e instanceof TypeError&&++netFails>=3&&!bStop){bMsg="⛔ تعذّر الاتصال بالخدمة ٣ مرات متتالية: غالباً انقطاع النت أو تجاوز الحد المجاني. أوقفت الدفعة حتى لا تُهدر المحاولات.";bStop=true}}
 }
 async function startRun(items){
  const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑)");return}
  if(bRun){toast("الدفعة السابقة ما زالت تعمل");return}
  bRun=true;bStop=false;items.forEach(i=>{i.st="wait";i.why=[]});renderBatch();
- ctl=new AbortController();par=PAR;let idx=0;
+ ctl=new AbortController();par=PAR;netFails=0;bMsg="";let idx=0;
  const worker=async w=>{while(!bStop){if(w>=par){if(idx>=items.length)break;try{await sleep(400,ctl.signal)}catch(e){break}continue}const it=items[idx++];if(!it)break;await procItem(it,key,ctl.signal);renderBatch()}};
  await Promise.all(Array.from({length:PAR},(_,w)=>worker(w)));
  items.forEach(i=>{if(i.st==="wait"){i.st="fail";i.why=["لم تُعالج (أُوقفت الدفعة)"]}});
@@ -550,6 +568,8 @@ function renderBatch(){
  const fl=bItems.filter(i=>i.st==="ok"&&i.flag).length;
  $("#bStats").textContent="✅ مؤرشف: "+toAr(c("ok"))+(fl?" (منها "+toAr(fl)+" بملاحظة)":"")+"  •  🟠 تحتاج مراجعة: "+toAr(c("review"))+"  •  ⚠️ مكرر: "+toAr(c("dup"))+"  •  ❌ فشل: "+toAr(c("fail"));
  $("#bStop").style.display=bRun?"":"none";
+ $("#bNote").textContent=bMsg;$("#bNote").style.display=bMsg?"":"none";
+ $("#bRetry").style.display=!bRun&&c("fail")?"":"none";
  const L=$("#bList");L.innerHTML="";
  bItems.filter(i=>["review","dup","fail"].includes(i.st)).forEach(it=>{
   const d=document.createElement("div");d.className="bi";
@@ -564,6 +584,7 @@ function renderBatch(){
   if(it.st==="dup")mk("إخفاء",()=>{bItems=bItems.filter(x=>x!==it);renderBatch()});
   L.append(d)});
 }
+$("#bRetry").onclick=()=>{if(!bRun)startRun(bItems.filter(i=>i.st==="fail"))};
 $("#bStop").onclick=()=>{bStop=true;if(ctl)ctl.abort();toast("تم إلغاء الطلبات الجارية")};
 const handleBatch=fs=>{
  if(!fs.length)return;
