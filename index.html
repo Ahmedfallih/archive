@@ -158,19 +158,22 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
   <div class="card" id="capStart">
    <button class="big" id="shoot">📷 التقط صورة المستند</button>
    <button class="big gal" id="gal">🖼️ اختر من الاستوديو (صورة أو عدة صور)</button>
-   <button class="big s" id="keyBtn2" style="margin-top:8px;padding:10px;font-size:14px">🔑 مفتاح احتياطي (اختياري)</button>
    <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
+   <button class="big s" id="keyBtn2" style="margin-top:8px;padding:10px;font-size:14px">🔑 مفتاح احتياطي (اختياري)</button>
+   <label class="note" style="display:flex;gap:8px;align-items:center;justify-content:center;cursor:pointer"><input type="checkbox" id="hq"> 🎯 دقة عالية (أبطأ وتستهلك بيانات أكثر)</label>
    <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
   </div>
   <div class="card hide" id="batchCard"><b id="bTitle" style="font-size:16px"></b><div class="pbar"><i id="bFill"></i></div><div id="bStats" class="note" style="line-height:1.9"></div><div id="bNote" class="note" style="color:#ffb347;display:none;line-height:1.7"></div><button class="big s" id="bRetry" style="padding:10px;font-size:14px;margin-bottom:8px;display:none">🔁 أعد كل المستندات الفاشلة</button><button class="big s" id="bStop" style="padding:10px;font-size:14px">⏹ إيقاف الدفعة</button><div id="bList"></div></div>
   <div class="card hide" id="capForm">
-   <img class="prev" id="prev" alt="">
+   <img class="prev" id="prev" alt="" style="cursor:zoom-in">
+   <div class="row" style="margin:8px 0"><button type="button" class="chip on" id="rotBtn">🔄 تدوير الصورة</button><button type="button" class="chip on" id="zoomBtn">🔍 تكبير للمراجعة</button></div>
    <div id="err" class="hide" style="background:#ffe8e8;color:#a00;border-radius:12px;padding:10px;margin:8px 0;font-size:13px;direction:ltr;text-align:left;word-break:break-word"></div>
    <div id="hint" class="hide"></div>
    <div class="busy hide" id="busy"><span class="spin">⏳</span> الذكاء الاصطناعي يقرأ المستند...</div>
    <div class="chips" id="chips" data-s="manual"><button type="button" class="tchip" data-t="deliv">📄 تسليم بطاقة</button><button type="button" class="tchip" data-t="bio">🧬 تسجيل بايومتري</button><button type="button" class="tchip" data-t="card">🪪 تسليم بطاقة الناخب</button></div>
    <small id="chipHint" class="note" style="display:none;margin:-2px 0 6px">اضغط على النوع لتغييره</small>
    <label id="lName">اسم المستلم</label><input type="text" id="fName">
+   <div id="sug" style="display:none;margin:6px 0"></div>
    <label>رقم الناخب</label><input type="text" id="fNum" inputmode="numeric">
    <label id="lEmp">اسم الموظف الذي سلّم البطاقة</label><input type="text" id="fEmp">
    <label id="lPhone" style="display:none">رقم هاتف الناخب</label><input type="text" id="fPhone" inputmode="tel" style="display:none">
@@ -285,15 +288,15 @@ const onPick=async e=>{
  $("#busy").classList.remove("hide");["#fName","#fNum","#fEmp","#fPhone","#fCardNo"].forEach(s=>$(s).value="");resetBack();
  const bmp=await createImageBitmap(f).catch(()=>null);
  if(!bmp){toast("تعذّر فتح الصورة");reset();return}
- const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height));
+ const sc=Math.min(1,capDim()/Math.max(bmp.width,bmp.height));
  const full=document.createElement("canvas");full.width=Math.round(bmp.width*sc);full.height=Math.round(bmp.height*sc);
  full.getContext("2d").drawImage(bmp,0,0,full.width,full.height);
  const box=findDoc(full);
  const out=document.createElement("canvas");out.width=box.w;out.height=box.h;
- const c=out.getContext("2d");c.filter="contrast(1.25) brightness(1.06) saturate(.85)";
+ const c=out.getContext("2d");
  c.drawImage(full,box.x,box.y,box.w,box.h,0,0,box.w,box.h);
+ const small=await compressForAI(out,"gray");enhance(out,"color");
  const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
- const small=await compressForAI(out);
  cur={img:blob};$("#prev").src=urlOf(blob);
  await extract(small,blob);
 };
@@ -315,21 +318,44 @@ function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر �
  return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
 }
 /* ---------- AI extraction ---------- */
-const P=`Iraqi voter documents (Arabic/Kurdish, handwritten or printed; image may be rotated). Reply JSON only: {"t":"","n":"","v":"","e":"","p":"","u":[]}
+const P=`Iraqi voter documents (Arabic/Kurdish, handwritten or printed; image may be rotated). Reply JSON only: {"t":"","n":"","v":"","e":"","p":"","o":"","u":[]}
 t: "d" if paper form titled «استمارة تسليم بطاقات الناخبين الإلكترونية», "b" if paper form titled «استمارة التسجيل البايومتري», "c" if the FRONT of the small voter ID card (has a person's photo).
 d: n=«اسم المستلم» at top (cross-check with table column «اسم صاحب البطاقة»); v=«رقم الناخب» field only (NOT card no., doc no., red serial; cross-check with table); e=name beside «اسم موظف التسليم» at bottom (not signature).
 b: n=«اسم الناخب» followed by «اسم الأب» (two names joined by one space: voter first, father second; do NOT add grandfather or surname); v=digits in the boxes beside «رقم الناخب»; p=«رقم هاتف الناخب».
 c: n=voter's first name then father's name (first two names only, joined by one space; no grandfather/surname); v=«رقم الناخب» printed on the card (8 digits).
+o: where the document's TOP (its title) is in the image: "u" up, "r" right, "l" left, "d" down.
+Hints: boxed digits are usually Eastern-Arabic (٠-٩): read box by box; voter number = 8 digits; Iraqi mobile = 11 digits starting 07. Spell names in standard Arabic; ignore signatures, stamps and crossed-out text.
 Digits 0-9 only, no spaces. u=list of keys among n,v,e,p you are unsure of. Empty string if absent; never guess.`;
 const PB=`Back of an Iraqi voter ID card (image may be rotated). Read the card number printed at the TOP-LEFT corner when the card is upright. Reply JSON only: {"c":"digits 0-9 only","u":false}. u=true if unsure.`;
 const P2=`Iraqi voter form. Read ONLY «رقم الناخب» (compare the field with the repeated number in the table below). Reply JSON only: {"v":"digits 0-9 only","u":false}. u=true if unsure.`;
 const compact=r=>{if(r.form_type!==undefined||r.voter_number!==undefined)return r;const m={n:"voter_name",v:"voter_number",e:"employee_name",p:"phone"};
- return{form_type:r.t==="b"?"biometric":r.t==="d"?"delivery":r.t==="c"?"card":"",voter_name:r.n||"",voter_number:r.v||"",employee_name:r.e||"",phone:r.p||"",uncertain:(Array.isArray(r.u)?r.u:[]).map(k=>m[k]||k)}};
+ return{form_type:r.t==="b"?"biometric":r.t==="d"?"delivery":r.t==="c"?"card":"",voter_name:r.n||"",voter_number:r.v||"",employee_name:r.e||"",phone:r.p||"",uncertain:(Array.isArray(r.u)?r.u:[]).map(k=>m[k]||k),o:r.o||""}};
 const sleep=(ms,sig)=>new Promise((res,rej)=>{const t=setTimeout(res,ms);if(sig)sig.addEventListener("abort",()=>{clearTimeout(t);rej(new DOMException("Aborted","AbortError"))},{once:true})});
-async function compressForAI(src,maxDim=1600,q=.75){ // ضغط وتصغير بجهة العميل قبل الإرسال
+const hqOn=()=>{try{return localStorage.getItem("hq")==="1"}catch(e){return false}};
+const capDim=()=>hqOn()?2400:1800;
+function enhance(canvas,mode){ // توازن ألوان + تمديد المستويات: يزيل الصبغة ويقوّي وضوح الحبر
+ const w=canvas.width,h=canvas.height,ctx=canvas.getContext("2d"),img=ctx.getImageData(0,0,w,h),d=img.data;
+ const H=[new Uint32Array(256),new Uint32Array(256),new Uint32Array(256)],HG=new Uint32Array(256);let n=0;
+ for(let i=0;i<d.length;i+=20){H[0][d[i]]++;H[1][d[i+1]]++;H[2][d[i+2]]++;n++}
+ const pct=(hh,p)=>{let c=0;const t=n*p;for(let v=0;v<256;v++){c+=hh[v];if(c>=t)return v}return 255};
+ const wp=[0,1,2].map(k=>Math.max(60,pct(H[k],.97)));
+ for(let i=0;i<d.length;i+=20){HG[Math.min(255,(.299*d[i]*255/wp[0]+.587*d[i+1]*255/wp[1]+.114*d[i+2]*255/wp[2])|0)]++}
+ const lo=pct(HG,.015),hi=Math.max(lo+40,pct(HG,.85)),k=255/(hi-lo),cl=v=>v<0?0:v>255?255:v;
+ for(let i=0;i<d.length;i+=4){
+  const r=Math.min(255,d[i]*255/wp[0]),g=Math.min(255,d[i+1]*255/wp[1]),b=Math.min(255,d[i+2]*255/wp[2]);
+  if(mode==="gray"){const y=cl((.299*r+.587*g+.114*b-lo)*k);d[i]=d[i+1]=d[i+2]=255*Math.pow(y/255,1.15)}
+  else{d[i]=cl((r-lo)*k);d[i+1]=cl((g-lo)*k);d[i+2]=cl((b-lo)*k)}}
+ ctx.putImageData(img,0,0);
+}
+async function rotBlob(blob,deg){
+ const bmp=await createImageBitmap(blob),d=((deg%360)+360)%360,sw=d%180?bmp.height:bmp.width,sh=d%180?bmp.width:bmp.height,c=document.createElement("canvas");
+ c.width=sw;c.height=sh;const g=c.getContext("2d");g.translate(sw/2,sh/2);g.rotate(d*Math.PI/180);g.drawImage(bmp,-bmp.width/2,-bmp.height/2);
+ const out=await new Promise(r=>c.toBlob(r,"image/jpeg",.88));c.width=0;if(bmp.close)bmp.close();return out;
+}
+async function compressForAI(src,mode=null,maxDim=hqOn()?2200:1600,q=hqOn()?.85:.75){ // ضغط وتصغير بجهة العميل قبل الإرسال
  const k=Math.min(1,maxDim/Math.max(src.width,src.height)),c=document.createElement("canvas");
  c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);
- const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);
+ const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);if(mode)enhance(c,mode);
  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",q));c.width=0;return blob;
 }
 const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}};
@@ -382,6 +408,13 @@ async function aiOne(key,prompt,blob,signal){
  throw new Error(last||"فشل الاتصال");
 }
 /* يجرّب المفاتيح بالترتيب: ينتقل للاحتياطي عند انتهاء الحصة أو عدم صلاحية المفتاح */
+async function readUpright(key,small,full,signal){
+ const r=compact(jsonOf(await aiCall(key,P,small,signal))),deg={r:270,l:90,d:180}[r.o];
+ if(deg){try{const s2=await rotBlob(small,deg),f2=full?await rotBlob(full,deg):null;
+   const r2=compact(jsonOf(await aiCall(key,P,s2,signal)));return{r:r2,small:s2,full:f2||full,rot:deg}}
+  catch(e){if(e&&(e.name==="AbortError"||e.quota||e.badKey))throw e}}
+ return{r,small,full,rot:0};
+}
 async function aiCall(_k,prompt,blob,signal){
  const keys=getKeys();if(!keys.length)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
  let last;
@@ -408,7 +441,7 @@ document.querySelectorAll("#chips .tchip").forEach(c=>c.onclick=()=>{
  if(chipSt==="result"){setChips("manual");return}
  setType(c.dataset.t);setChips("result")});
 let ft0="deliv";try{ft0=localStorage.getItem("ft")==="bio"?"bio":"deliv"}catch(e){}setType(ft0);
-const clearWarn=()=>{Object.values(WF).forEach(k=>$(k).classList.remove("warn"));$("#hint").classList.add("hide")};
+const clearWarn=()=>{$("#sug").style.display="none";Object.values(WF).forEach(k=>$(k).classList.remove("warn"));$("#hint").classList.add("hide")};
 Object.values(WF).forEach(k=>$(k).addEventListener("input",e=>e.target.classList.remove("warn")));
 async function extract(blob,full){
  att=1;let stage="يقرأ المستند";
@@ -416,14 +449,15 @@ async function extract(blob,full){
  const er=$("#err");er.classList.add("hide");er.textContent="";clearWarn();
  try{
   const key=getKey();if(!key)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
-  const r=compact(jsonOf(await aiCall(key,P,blob)));
+  const u=await readUpright(key,blob,full,undefined),r=u.r;full=u.full;
+  if(u.rot){cur.img=u.full;$("#prev").src=urlOf(u.full);toast("تم تدوير الصورة تلقائياً")}
   const un=new Set(Array.isArray(r.uncertain)?r.uncertain:[]);
   let num=toEn(r.voter_number||"").replace(/\D/g,"");
   const known=["biometric","delivery","card"].includes(r.form_type),dt=r.form_type==="biometric"?"bio":r.form_type==="delivery"?"deliv":r.form_type==="card"?"card":ftype,sw=dt!==ftype;
   if(sw){toast("تم التعرف على الاستمارة: "+FT[dt].label)}
   setType(dt);setChips(known?"result":"manual");
   const ph=toEn(r.phone||"").replace(/\D/g,"");
-  $("#fName").value=r.voter_name||"";$("#fEmp").value=r.employee_name||"";$("#fPhone").value=ph;$("#fNum").value=num;
+  $("#fName").value=r.voter_name||"";$("#fEmp").value=r.employee_name||"";$("#fPhone").value=ph;$("#fNum").value=num;updateSug();
   if(full&&(num.length<7||un.has("voter_number"))){ // تدقيق إضافي بصورة أعلى دقة
    stage="يدقّق رقم الناخب";att=1;
    try{const r2=jsonOf(await aiCall(key,P2,full));const n2=toEn(r2.v||r2.voter_number||"").replace(/\D/g,"");
@@ -540,17 +574,17 @@ const withLock=fn=>{const p=dbLock.then(fn);dbLock=p.catch(()=>{});return p};
 const BL={voter_name:"الاسم",voter_number:"رقم الناخب",employee_name:"اسم الموظف",phone:"الهاتف"};
 async function prepImage(f){
  const bmp=await createImageBitmap(f).catch(()=>null);if(!bmp)throw new Error("تعذّر فتح الصورة");
- const sc=Math.min(1,1800/Math.max(bmp.width,bmp.height)),full=document.createElement("canvas");
+ const sc=Math.min(1,capDim()/Math.max(bmp.width,bmp.height)),full=document.createElement("canvas");
  full.width=Math.round(bmp.width*sc);full.height=Math.round(bmp.height*sc);full.getContext("2d").drawImage(bmp,0,0,full.width,full.height);
  const bx=findDoc(full),out=document.createElement("canvas");out.width=bx.w;out.height=bx.h;
- const c=out.getContext("2d");c.filter="contrast(1.25) brightness(1.06) saturate(.85)";c.drawImage(full,bx.x,bx.y,bx.w,bx.h,0,0,bx.w,bx.h);
+ const c=out.getContext("2d");c.drawImage(full,bx.x,bx.y,bx.w,bx.h,0,0,bx.w,bx.h);
+ const small=await compressForAI(out,"gray");enhance(out,"color");
  const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
- const small=await compressForAI(out);
  full.width=out.width=0;if(bmp.close)bmp.close();
  return{blob,small};
 }
 async function readDoc(key,small,full,signal){
- const r=compact(jsonOf(await aiCall(key,P,small,signal)));
+ const u=await readUpright(key,small,full,signal),r=u.r;full=u.full;
  const un=new Set(Array.isArray(r.uncertain)?r.uncertain:[]);
  let num=toEn(r.voter_number||"").replace(/\D/g,"");
  const type=r.form_type==="biometric"?"bio":r.form_type==="delivery"?"deliv":r.form_type==="card"?"card":null;
@@ -566,7 +600,7 @@ async function readDoc(key,small,full,signal){
  if(type==="deliv"&&!emp)soft.push("اسم الموظف غير مقروء");
  if((type==="bio"||type==="card")&&name&&name.split(/\s+/).length<2)soft.push("اسم الأب غير مقروء");
  if(type==="bio"&&phone&&phone.length!==11)soft.push("الهاتف "+toAr(phone.length)+" رقماً");
- return{type,name,num,emp,phone,un,hard,soft};
+ return{type,name,num,emp,phone,un,hard,soft,fullOut:u.full};
 }
 async function procItem(it,key,signal){
  it.st="busy";renderBatch();
@@ -574,6 +608,7 @@ async function procItem(it,key,signal){
   const pr=await prepImage(it.f);it.blob=pr.blob;it.url=urlOf(pr.blob);
   let r,tries=0;
   for(;;){try{r=await readDoc(key,pr.small,pr.blob,signal);netFails=0;break}catch(e){if(e&&e.quota)throw e;if(/429/.test(e.message)&&tries++<2&&!bStop){par=Math.max(1,par-1);await sleep(20000,signal);continue}throw e}}
+  if(r.fullOut&&r.fullOut!==pr.blob){pr.blob=r.fullOut;it.blob=r.fullOut;if(it.url)URL.revokeObjectURL(it.url);it.url=urlOf(r.fullOut)}
   Object.assign(it,{detected:!!r.type,type:r.type||ftype,name:r.name,num:r.num,emp:r.emp,phone:r.phone,un:r.un,why:r.hard.concat(r.soft)});
   if(r.hard.length){it.st="review";return}
   const flag=r.soft.join("، "),now=Date.now();
@@ -642,6 +677,37 @@ const handleBatch=fs=>{
  const fresh=fs.map(f=>({file:f.name||"صورة",f,st:"wait",why:[]}));bItems.push(...fresh);startRun(fresh);
 };
 $("#file2").onchange=e=>{const fs=[...e.target.files];if(fs.length>1)handleBatch(fs);else onPick(e)};
+
+/* ---------- اقتراحات تصحيح الأسماء + التكبير + التدوير اليدوي ---------- */
+const NAMES="محمد أحمد علي حسن حسين عباس كاظم جاسم يوسف إبراهيم اسماعيل عبد الله الحسين الرضا الأمير الزهرة الكريم الرحمن الجبار الستار الواحد العباس الحميد مصطفى مهدي موسى عيسى صالح سعد سعيد ناصر نصير منير جعفر حيدر باسم قاسم هاشم فاضل فالح كريم رحيم رحمن رحمة صادق طالب طارق ماجد ماهر مازن علاء عماد عمار عمر خالد خليل خضير جواد جبار جليل جميل حميد حامد حازم زيد زهير زيدان سلمان سليم سلام شاكر شريف صباح صبري صفاء ضياء عادل عامر عدنان عقيل غالب غانم فراس فارس فيصل فاروق لؤي مالك مرتضى مسلم مجيد محسن محمود مؤيد نبيل نزار نعمان هادي هاني هشام وليد ياسر ياسين يحيى علوان عليوي فاطمة زينب مريم سارة نور زهراء آمنة خديجة رقية سكينة نعيمة هدى سعاد سناء ميس ريم رنا".split(" ");
+async function updateSug(){
+ const box=$("#sug"),toks=$("#fName").value.trim().split(/\s+/).filter(t=>t.length>=3);
+ if(!toks.length){box.style.display="none";return}
+ const dict=new Map(),add=(w,f)=>{const n=norm(w);if(!n)return;const e=dict.get(n);if(e)e.f+=f;else dict.set(n,{w,f})};
+ NAMES.forEach(w=>add(w,1));
+ try{(await all()).forEach(x=>String(x.name||"").split(/\s+/).forEach(w=>{if(w.length>=3)add(w,2)}))}catch(e){}
+ const out=[];
+ toks.forEach(t=>{const n=norm(t);if(dict.has(n))return;let best=null;
+  for(const[k,v]of dict){if(Math.abs(k.length-n.length)>1)continue;if(lev(n,k,1)<=1&&(!best||v.f>best.f))best=v}
+  if(best)out.push([t,best.w])});
+ box.innerHTML="";if(!out.length){box.style.display="none";return}
+ box.style.display="";const lab=document.createElement("small");lab.className="note";lab.style.display="block";lab.style.textAlign="right";lab.textContent="💡 اقتراحات تصحيح (اضغط لتطبيق):";box.append(lab);
+ out.forEach(([from,to])=>{const b=document.createElement("button");b.type="button";b.className="chip on";b.style.margin="4px 0 0 6px";b.textContent=from+" ← "+to;
+  b.onclick=()=>{$("#fName").value=$("#fName").value.split(/\s+/).map(t=>t===from?to:t).join(" ");$("#fName").classList.remove("warn");updateSug()};box.append(b)});
+}
+$("#fName").addEventListener("input",()=>{clearTimeout(window.__sg);window.__sg=setTimeout(updateSug,350)});
+function zoomImg(src){const d=$("#dlg");d.innerHTML="";const w=document.createElement("div");w.style.cssText="max-height:78vh;overflow:auto;border-radius:12px;background:#fff";
+ const im=document.createElement("img");im.src=src;im.style.cssText="width:230%;display:block";w.append(im);
+ const c=document.createElement("button");c.className="big s";c.textContent="إغلاق";c.style.marginTop="10px";c.onclick=()=>d.close();d.append(w,c);d.showModal()}
+$("#prev").onclick=()=>zoomImg($("#prev").src);$("#zoomBtn").onclick=()=>zoomImg($("#prev").src);
+$("#prevBack").onclick=()=>zoomImg($("#prevBack").src);
+$("#rotBtn").onclick=async()=>{
+ if(!cur||!cur.img)return;
+ try{const r90=await rotBlob(cur.img,90);cur.img=r90;$("#prev").src=urlOf(r90);
+  const bmp=await createImageBitmap(r90),small=await compressForAI(bmp,"gray");if(bmp.close)bmp.close();
+  setChips("loading");$("#busy").classList.remove("hide");await extract(small,r90)}
+ catch(e){toast("تعذّر تدوير الصورة")}};
+$("#hq").checked=hqOn();$("#hq").onchange=e=>{try{localStorage.setItem("hq",e.target.checked?"1":"0")}catch(x){}};
 openDb().then(()=>stats());
 })();
 </script>
