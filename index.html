@@ -143,10 +143,21 @@ body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixe
 #chips[data-s="loading"] .tchip{border-color:#f5b800;background:rgba(245,184,0,.10);box-shadow:0 0 0 2px rgba(245,184,0,.30);pointer-events:none;animation:goldpulse 1.1s ease-in-out infinite alternate}
 @keyframes goldpulse{from{box-shadow:0 0 0 1px rgba(245,184,0,.25)}to{box-shadow:0 0 0 5px rgba(245,184,0,.55)}}
 .chips{flex-wrap:wrap}.tchip{flex:1 1 28%;font-size:12.5px;padding:9px 4px}
+header{position:relative}
+#acct{position:absolute;top:16px;left:14px;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;
+ background:radial-gradient(90% 70% at 30% 15%,rgba(255,255,255,.55),rgba(255,255,255,0) 60%),linear-gradient(160deg,#6f7bd8,#3a4388);
+ box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 6px 14px rgba(0,0,0,.35);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+#acct:active{transform:scale(.88)}
+#acct svg{width:23px;height:23px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#acct::after{content:"";position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;border:2px solid #14183a;background:#8a8fb5}
+#acct.wait::after{background:#ffb347;animation:goldpulse 1.1s ease-in-out infinite alternate}
+#acct.ok::after{background:#1fc16b}
+#acct.err::after{background:#ff4d6d}
+input[type=email],input[type=password]{width:100%;padding:13px;border-radius:14px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
 </style>
 </head>
 <body>
-<header><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
+<header><button id="acct" type="button" aria-label="الحساب والأرشيف المشترك"></button><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
 <nav class="tabs">
  <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle class="lens" cx="12" cy="13" r="3.6"/><circle class="dot" cx="12" cy="13" r="1.8"/></svg></span>تصوير</button>
  <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><g class="mag"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></g></svg></span>بحث</button>
@@ -232,28 +243,28 @@ const smart=(a,q)=>{const qt=norm(q).split(" ").filter(Boolean);if(!qt.length)re
   for(const t of qt){let best=0;for(const h of ht){best=Math.max(best,tokScore(t,h));if(best===4)break}if(!best)return null;sc+=best}
   return{x,sc}}).filter(Boolean).sort((p,r)=>r.sc-p.sc||(r.x.ts||0)-(p.x.ts||0)).map(o=>o.x)};
 async function list(sel,q){
- let a=await all();a.reverse();
+ let a=await allMerged();a.reverse();a.sort((p,r)=>(r.ts||0)-(p.ts||0));
  if(sel==="#aRes"){$("#aCnt").textContent="عدد المستندات: "+toAr(a.length);$("#delAll").style.display=a.length?"":"none"}q=(q||"").trim();
  if(sel==="#sRes"&&aiIds){const all0=a;a=aiIds.map(id=>all0.find(x=>x.id==id)).filter(Boolean)}else if(q)a=smart(a,q);
  const box=$(sel);box.innerHTML="";
  if(!a.length){box.innerHTML='<p class="note">'+(q||aiIds?"لا توجد نتائج"+(aiIds?"":" — جرّب «🤖 بحث ذكي» بالأسفل"):"لا توجد مستندات بعد")+'</p>';return}
  if(sel==="#sRes"&&(q||aiIds))box.innerHTML='<p class="note">عدد النتائج: '+toAr(a.length)+(aiIds?" (بحث ذكي)":"")+'</p>';
  a.forEach(x=>{const d=document.createElement("div");d.className="card item";
-  const im=document.createElement("img");im.src=urlOf(x.img);
+  const im=document.createElement(x.remote?"div":"img");if(x.remote){im.style.cssText="width:64px;height:84px;border-radius:10px;border:1px dashed var(--bd);display:grid;place-items:center;font-size:24px;flex:none";im.textContent="☁️"}else im.src=urlOf(x.img);
   const t=document.createElement("div");
   t.style.flex="1";t.style.minWidth="0";t.innerHTML='<b></b><small class="nv"></small><small class="em"></small><small class="dt"></small>';
-  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");t.children[2].textContent=(tyOf(x)==="deliv"?"الموظف: ":"الهاتف: ")+(third(x)||"—")+(tyOf(x)==="card"?" • البطاقة: "+(x.cardNo||"—"):"");t.children[3].textContent=x.ts?fmt(x.ts):toAr(x.date||"");
+  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");t.children[2].textContent=(tyOf(x)==="deliv"?"الموظف: ":"الهاتف: ")+(third(x)||"—")+(tyOf(x)==="card"?" • البطاقة: "+(x.cardNo||"—"):"");t.children[3].textContent=(x.ts?fmt(x.ts):toAr(x.date||""))+(x.by?" • أرشفه: "+x.by:"");
   const tb=document.createElement("button");tb.className="trash";tb.textContent="🗑️";tb.setAttribute("aria-label","حذف");
-  tb.onclick=async ev=>{ev.stopPropagation();if(confirm("حذف مستند «"+(x.name||x.num||"")+"» نهائياً؟")){await del(x.id);list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم الحذف")}};
+  tb.onclick=async ev=>{ev.stopPropagation();if(confirm("حذف مستند «"+(x.name||x.num||"")+"» نهائياً؟"+(cfg?"\nسيُحذف أيضاً من الأرشيف المشترك.":""))){await del(x.id);cloudDel(x);list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم الحذف")}};
   const tg=document.createElement("span");tg.className="tag "+tyOf(x);tg.textContent=FT[tyOf(x)].ico+" "+FT[tyOf(x)].label;t.insertBefore(tg,t.firstChild);
   if(x.flag){const fl=document.createElement("small");fl.className="flag";fl.textContent="🟠 ملاحظة: "+x.flag;t.append(fl)}
-  d.append(im,t,tb);d.onclick=()=>show(x);box.append(d)});
+  d.append(im,t);if(!x.remote)d.append(tb);d.onclick=()=>x.remote?toast("☁️ الصورة محفوظة على جهاز: "+(x.by||"موظف آخر")):show(x);box.append(d)});
 }
 $("#q").oninput=e=>{aiIds=null;list("#sRes",e.target.value)};
 $("#aiSearch").onclick=async()=>{
  const q=$("#q").value.trim();if(!q){toast("اكتب ما تبحث عنه أولاً");return}
  const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑 بصفحة التصوير)");return}
- const a=await all();if(!a.length){toast("لا توجد مستندات");return}
+ const a=await allMerged();if(!a.length){toast("لا توجد مستندات");return}
  let ok=false;try{ok=localStorage.getItem("aiok")==="1"}catch(e){}
  if(!ok){if(!confirm("للبحث الذكي سيتم إرسال أسماء وأرقام المستندات (بدون الصور) إلى خدمة الذكاء الاصطناعي. هل توافق؟"))return;try{localStorage.setItem("aiok","1")}catch(e){}}
  const b=$("#aiSearch"),old=b.textContent;b.disabled=true;b.textContent="⏳ الذكاء الاصطناعي يبحث...";
@@ -277,7 +288,7 @@ function show(x){
  const r=document.createElement("div");r.className="row";
  const c=document.createElement("button");c.className="big s";c.textContent="إغلاق";c.onclick=()=>d.close();
  const k=document.createElement("button");k.className="big";k.textContent="🗑️ حذف";
- k.onclick=async()=>{if(confirm("حذف هذا المستند؟")){await del(x.id);d.close();list("#aRes",null);list("#sRes",$("#q").value)}};
+ k.onclick=async()=>{if(confirm("حذف هذا المستند؟"+(cfg?"\nسيُحذف أيضاً من الأرشيف المشترك.":""))){await del(x.id);cloudDel(x);d.close();list("#aRes",null);list("#sRes",$("#q").value)}};
  r.append(c,k);d.append(im);if(x.img2){const i2=document.createElement("img");i2.className="prev";i2.style.marginTop="8px";i2.src=urlOf(x.img2);d.append(i2)}d.append(p,r);d.showModal();
 }
 /* ---------- Capture + crop ---------- */
@@ -492,8 +503,10 @@ $("#save").onclick=async()=>{
   if(!cardNo){toast("رقم البطاقة مطلوب (من الوجه الخلفي)");$("#fCardNo").classList.add("warn");return}}
  const ex=(await all()).find(x=>tyOf(x)===t&&toEn(x.num||"").replace(/\s/g,"")===num);
  if(ex){toast("⚠️ هذه الاستمارة ("+FT[t].label+") محفوظة سابقاً\nرقم الناخب "+num+" — "+(ex.name||"")+"\nتاريخ الحفظ: "+(ex.ts?fmt(ex.ts):toAr(ex.date||"")),8000);return}
- const now=Date.now();
- await put({type:t,name,num,emp,phone,cardNo,img:cur.img,img2:t==="card"?backBlob:null,ts:now,date:fmt(now)});
+ const now=Date.now(),rec={type:t,name,num,emp,phone,cardNo,ts:now,date:fmt(now),flag:""};
+ const cr=await cloudPut(rec);
+ if(cr.block){toast(cr.msg,8000);if(cr.auth)openAcct();return}
+ await put({type:t,name,num,emp,phone,cardNo,img:cur.img,img2:t==="card"?backBlob:null,ts:now,date:fmt(now),by:rec.by||"",synced:!!cr.ok});
  if(curItem){curItem.st="ok";curItem.blob=null;curItem.flag=""}
  toast("تم الحفظ ✅");reset();
 };
@@ -521,11 +534,11 @@ async function share(blob,filename){
 }
 async function cell(c,v){return `<c r="${c}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`}
 $("#xl").onclick=async()=>{
- const a=await all();if(!a.length){toast("لا توجد بيانات");return}
- const col="ABCDEFGH",X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',enc=new TextEncoder(),E=q=>enc.encode(q);
- const heads={deliv:["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة"],bio:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم الهاتف","تاريخ الأرشفة","اسم ملف الصورة"],card:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم البطاقة","رقم الهاتف","تاريخ الأرشفة","صورة الوجه الأمامي","صورة الوجه الخلفي"]};
+ const a=await allMerged();if(!a.length){toast("لا توجد بيانات");return}
+ const col="ABCDEFGHI",X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',enc=new TextEncoder(),E=q=>enc.encode(q);
+ const heads={deliv:["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة","الموظف الذي أرشف"],bio:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم الهاتف","تاريخ الأرشفة","اسم ملف الصورة","الموظف الذي أرشف"],card:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم البطاقة","رقم الهاتف","تاريخ الأرشفة","صورة الوجه الأمامي","صورة الوجه الخلفي","الموظف الذي أرشف"]};
  const used={},byT={deliv:[],bio:[],card:[]};
- for(const x of a){const t=tyOf(x);used[t]=used[t]||new Set();const f=fname(x,used[t]),b0=f.replace(/\.jpg$/,"");byT[t].push(t==="card"?[x.name,x.num,x.cardNo,x.phone,x.date,b0+"_front.jpg",b0+"_back.jpg"]:[x.name,x.num,third(x),x.date,f])}
+ for(const x of a){const t=tyOf(x);used[t]=used[t]||new Set();const f=x.remote?"":fname(x,used[t]),b0=f.replace(/\.jpg$/,"");byT[t].push(t==="card"?[x.name,x.num,x.cardNo,x.phone,x.date,x.remote?"":b0+"_front.jpg",x.remote?"":b0+"_back.jpg",x.by||""]:[x.name,x.num,third(x),x.date,f,x.by||""])}
  const sheets=["deliv","bio","card"].filter(t=>byT[t].length).map(t=>{
   const cr=(r,j,v)=>`<c r="${col[j]}${r}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`;
   let rows=`<row r="1">${heads[t].map((h,j)=>cr(1,j,h)).join("")}</row>`;
@@ -614,7 +627,10 @@ async function procItem(it,key,signal){
   const flag=r.soft.join("، "),now=Date.now();
   const dupe=await withLock(async()=>{
    const d=(await all()).find(x=>tyOf(x)===it.type&&toEn(x.num||"").replace(/\s/g,"")===it.num);if(d)return d;
-   await put({type:it.type,name:it.name,num:it.num,emp:it.type==="deliv"?it.emp:"",phone:it.type==="bio"?it.phone:"",img:pr.blob,ts:now,date:fmt(now),flag});return null});
+   const rec={type:it.type,name:it.name,num:it.num,emp:it.type==="deliv"?it.emp:"",phone:it.type==="bio"?it.phone:"",cardNo:"",ts:now,date:fmt(now),flag};
+    const cr=await cloudPut(rec);if(cr.block)return{_cloud:cr};
+    await put({type:it.type,name:it.name,num:it.num,emp:rec.emp,phone:rec.phone,img:pr.blob,ts:now,date:fmt(now),flag,by:rec.by||"",synced:!!cr.ok});return null});
+  if(dupe&&dupe._cloud){const c=dupe._cloud;if(c.auth){it.st="fail";it.why=[c.msg];bMsg="⛔ "+c.msg;bStop=true}else{it.st="dup";it.why=[c.msg.replace(/\n/g," • ")]}return}
   if(dupe){it.st="dup";it.why=["محفوظة سابقاً: "+(dupe.name||"")+" — "+(dupe.ts?fmt(dupe.ts):toAr(dupe.date||""))];return}
   it.st="ok";it.flag=flag;it.blob=null;if(it.url){URL.revokeObjectURL(it.url);it.url=null}
  }catch(e){it.st="fail";it.why=[e&&e.name==="AbortError"?"أُوقفت الدفعة":String(e.message||e).slice(0,160)];
@@ -708,6 +724,132 @@ $("#rotBtn").onclick=async()=>{
   setChips("loading");$("#busy").classList.remove("hide");await extract(small,r90)}
  catch(e){toast("تعذّر تدوير الصورة")}};
 $("#hq").checked=hqOn();$("#hq").onchange=e=>{try{localStorage.setItem("hq",e.target.checked?"1":"0")}catch(x){}};
+/* ---------- الأرشيف المشترك (Firebase، نصوص فقط، بدون صور) ---------- */
+let cfg=null,fbs=null,idTok="",tokExp=0,remote=new Map(),lastTs=0,lastFull=0,lastSync=0,syncing=false,syncErr="",pend=[];
+const persist=(k,v)=>{try{localStorage.setItem(k,typeof v==="string"?v:JSON.stringify(v))}catch(e){}};
+try{cfg=JSON.parse(localStorage.getItem("fbcfg")||"null")}catch(e){}
+try{fbs=JSON.parse(localStorage.getItem("fbs")||"null")}catch(e){}
+try{pend=JSON.parse(localStorage.getItem("fbpend")||"[]")}catch(e){}
+try{JSON.parse(localStorage.getItem("fbcache")||"[]").forEach(r=>remote.set(r.type+"|"+r.num,r))}catch(e){}
+try{const m=/#cfg=([^&]+)/.exec(location.hash);if(m){const c=JSON.parse(atob(decodeURIComponent(m[1])));
+ if(c.apiKey&&c.projectId){cfg={apiKey:c.apiKey,projectId:c.projectId};persist("fbcfg",cfg);history.replaceState(null,"",location.pathname+location.search);setTimeout(()=>toast("تم إعداد الأرشيف المشترك ✅ سجّل الدخول من أيقونة 👤"),700)}}}catch(e){}
+const FSB=()=>"https://firestore.googleapis.com/v1/projects/"+cfg.projectId+"/databases/(default)/documents";
+const AUTHERR={EMAIL_NOT_FOUND:"الإيميل غير مسجّل",INVALID_PASSWORD:"كلمة المرور غير صحيحة",INVALID_LOGIN_CREDENTIALS:"الإيميل أو كلمة المرور غير صحيحة",USER_DISABLED:"الحساب معطّل",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كثيرة، حاول لاحقاً",INVALID_EMAIL:"الإيميل غير صالح",MISSING_PASSWORD:"أدخل كلمة المرور"};
+async function fbLogin(email,pw,name){
+ const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+encodeURIComponent(cfg.apiKey),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok){const code=String((j.error&&j.error.message)||"").split(" ")[0];throw new Error(AUTHERR[code]||("تعذّر تسجيل الدخول: "+code))}
+ fbs={refresh:j.refreshToken,uid:j.localId,email:j.email,name:(name||"").trim()||String(j.email).split("@")[0]};idTok=j.idToken;tokExp=Date.now()+(+j.expiresIn||3600)*1000;persist("fbs",fbs);
+}
+async function fbToken(){
+ if(!cfg||!fbs)throw new Error("غير مسجّل الدخول");
+ if(idTok&&Date.now()<tokExp-60000)return idTok;
+ const r=await fetch("https://securetoken.googleapis.com/v1/token?key="+encodeURIComponent(cfg.apiKey),{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(fbs.refresh)});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok){if(r.status===400||r.status===401){fbLogout(true);throw new Error("انتهت جلسة الدخول، سجّل الدخول من جديد")}throw new TypeError("refresh failed "+r.status)}
+ idTok=j.id_token;tokExp=Date.now()+(+j.expires_in||3600)*1000;if(j.refresh_token){fbs.refresh=j.refresh_token;persist("fbs",fbs)}return idTok;
+}
+function fbLogout(silent){fbs=null;idTok="";remote=new Map();lastTs=0;try{localStorage.removeItem("fbs");localStorage.removeItem("fbcache")}catch(e){}acctUI();if(!silent)toast("تم تسجيل الخروج")}
+const sv=v=>({stringValue:String(v==null?"":v)});
+const toFields=r=>({type:sv(r.type),name:sv(r.name),num:sv(r.num),emp:sv(r.emp),phone:sv(r.phone),cardNo:sv(r.cardNo),by:sv(r.by),byUid:sv(fbs.uid),flag:sv(r.flag),date:sv(r.date),ts:{timestampValue:new Date(r.ts).toISOString()}});
+const fromDoc=d=>{const f=d.fields||{},g=k=>(f[k]&&f[k].stringValue)||"";return{type:g("type"),name:g("name"),num:g("num"),emp:g("emp"),phone:g("phone"),cardNo:g("cardNo"),by:g("by"),byUid:g("byUid"),flag:g("flag"),date:g("date"),ts:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0}};
+const rkey=r=>r.type+"|"+r.num,docId=r=>encodeURIComponent(r.type+"_"+r.num);
+const cachePersist=()=>persist("fbcache",[...remote.values()]);
+const dupMsg=d=>"⚠️ هذه الاستمارة ("+(FT[d.type]?FT[d.type].label:"")+") مؤرشفة سابقاً من قبل «"+(d.by||"موظف آخر")+"»\nرقم الناخب "+d.num+(d.name?" — "+d.name:"")+"\nبتاريخ "+(d.ts?fmt(d.ts):toAr(d.date||""));
+function queuePending(r){pend=pend.filter(p=>rkey(p)!==rkey(r));pend.push(r);persist("fbpend",pend);acctUI()}
+async function cloudPut(r){ // يحجز الرقم بالأرشيف المشترك (يمنع التكرار بين الموظفين)
+ if(!cfg)return{skip:true};
+ if(!fbs)return{block:true,auth:true,msg:"سجّل الدخول أولاً من أيقونة 👤 أعلى الصفحة"};
+ const ex=remote.get(rkey(r));if(ex)return{block:true,dup:ex,msg:dupMsg(ex)};
+ r.by=fbs.name;
+ try{
+  const tk=await fbToken(),res=await fetch(FSB()+"/archive?documentId="+docId(r),{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({fields:toFields(r)})});
+  if(res.ok){remote.set(rkey(r),{...r,byUid:fbs.uid});cachePersist();return{ok:true}}
+  if(res.status===409){const g=await fetch(FSB()+"/archive/"+docId(r),{headers:{authorization:"Bearer "+tk}}),d=g.ok?fromDoc(await g.json()):{type:r.type,num:r.num,by:"موظف آخر",date:""};remote.set(rkey(d),d);cachePersist();return{block:true,dup:d,msg:dupMsg(d)}}
+  const j=await res.json().catch(()=>({}));
+  if(res.status===401||res.status===403)return{block:true,msg:"لا توجد صلاحية للأرشفة المشتركة: "+((j.error&&j.error.message)||res.status)};
+  throw new TypeError("HTTP "+res.status);
+ }catch(e){
+  if(e instanceof TypeError){queuePending(r);return{offline:true}}
+  return{block:true,msg:"تعذّرت الأرشفة المشتركة: "+(e.message||e)};
+ }
+}
+async function cloudDel(x){
+ if(!cfg||!fbs||x.remote)return;const key=tyOf(x)+"|"+toEn(x.num||""),r={type:tyOf(x),num:toEn(x.num||"")};
+ pend=pend.filter(p=>rkey(p)!==key);persist("fbpend",pend);
+ const ex=remote.get(key);if(!x.synced&&!(ex&&ex.byUid===fbs.uid))return;
+ try{const tk=await fbToken(),res=await fetch(FSB()+"/archive/"+docId(r),{method:"DELETE",headers:{authorization:"Bearer "+tk}});if(res.ok){remote.delete(key);cachePersist()}else throw 0}
+ catch(e){toast("تعذّر حذف النسخة من الأرشيف المشترك")}
+}
+async function flushPending(){
+ if(!cfg||!fbs||!pend.length)return;const keep=[];
+ for(const r of pend){
+  try{const tk=await fbToken(),res=await fetch(FSB()+"/archive?documentId="+docId(r),{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({fields:toFields(r)})});
+   if(res.ok||res.status===409||res.status===401||res.status===403)continue;keep.push(r)}catch(e){keep.push(r)}}
+ pend=keep;persist("fbpend",pend);
+}
+async function cloudSync(full){
+ if(!cfg||!fbs||syncing)return;syncing=true;
+ try{
+  await flushPending();
+  const tk=await fbToken(),doFull=full||!lastTs||Date.now()-lastFull>900000;
+  const q={from:[{collectionId:"archive"}],orderBy:[{field:{fieldPath:"ts"},direction:"ASCENDING"}],limit:doFull?1000:500};
+  if(!doFull)q.where={fieldFilter:{field:{fieldPath:"ts"},op:"GREATER_THAN",value:{timestampValue:new Date(lastTs-600000).toISOString()}}};
+  const res=await fetch(FSB()+":runQuery",{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({structuredQuery:q})});
+  if(!res.ok){const j=await res.json().catch(()=>({})),e0=Array.isArray(j)?j[0]:j;throw new Error((e0&&e0.error&&e0.error.message)||("HTTP "+res.status))}
+  const rows=await res.json(),got=rows.filter(x=>x.document).map(x=>fromDoc(x.document));
+  if(doFull){remote=new Map();lastFull=Date.now()}
+  got.forEach(r=>{remote.set(rkey(r),r);if(r.ts>lastTs)lastTs=r.ts});
+  cachePersist();lastSync=Date.now();syncErr="";
+ }catch(e){syncErr=String(e.message||e).slice(0,90)}
+ finally{syncing=false;acctUI();refreshViews()}
+}
+function refreshViews(){
+ if(!$("#all").classList.contains("hide"))list("#aRes",null);
+ if(!$("#srch").classList.contains("hide"))list("#sRes",$("#q").value);
+}
+async function allMerged(){
+ const loc=await all();if(!cfg||!fbs)return loc;
+ const keys=new Set(loc.map(x=>tyOf(x)+"|"+toEn(x.num||"")));
+ return loc.concat([...remote.values()].filter(r=>!keys.has(rkey(r))).map(r=>({...r,id:"r:"+rkey(r),remote:true})));
+}
+const USER_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg>';
+function acctUI(){
+ const b=$("#acct");b.innerHTML=USER_SVG;b.className=!cfg?"":!fbs?"wait":syncErr?"err":"ok";
+ b.title=!cfg?"الأرشيف المشترك غير مفعّل":!fbs?"سجّل الدخول":"مسجّل: "+fbs.name;
+}
+function openAcct(){
+ const d=$("#dlg");d.innerHTML="";
+ const h=document.createElement("b");h.textContent="👤 الحساب والأرشيف المشترك";h.style.fontSize="17px";d.append(h);
+ const note=t=>{const p=document.createElement("p");p.className="note";p.style.cssText="text-align:right;line-height:1.8;white-space:pre-line";p.textContent=t;d.append(p);return p};
+ const inp=(ph,type,val)=>{const i=document.createElement("input");i.type=type||"text";i.placeholder=ph;i.value=val||"";i.style.marginTop="8px";i.autocomplete="off";d.append(i);return i};
+ const btn=(t,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className="big "+(cls||"");b.textContent=t;b.style.cssText="margin-top:10px;padding:12px";b.onclick=fn;d.append(b);return b};
+ if(!cfg){
+  note("الأرشيف المشترك غير مفعّل على هذا الجهاز.\nإذا أعطاك المدير رابط الإعداد فافتحه. وإذا كنت المدير، الصق نص firebaseConfig هنا:");
+  const ta=document.createElement("textarea");ta.rows=5;ta.placeholder='const firebaseConfig = { apiKey: "...", projectId: "..." }';
+  ta.style.cssText="width:100%;margin-top:8px;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;direction:ltr";d.append(ta);
+  btn("حفظ الإعداد","g",()=>{const a=/apiKey\s*:\s*["']([^"']+)/.exec(ta.value),p=/projectId\s*:\s*["']([^"']+)/.exec(ta.value);
+   if(!a||!p){toast("لم أجد apiKey أو projectId بالنص");return}cfg={apiKey:a[1],projectId:p[1]};persist("fbcfg",cfg);acctUI();openAcct()});
+ }else if(!fbs){
+  note("سجّل الدخول بالإيميل وكلمة المرور اللي أعطاك إياها المدير.");
+  const e=inp("الإيميل","email"),pw=inp("كلمة المرور","password"),nm=inp("اسمك (يظهر بالأرشيف مع كل مستند)","text",lsGet("myname")),msg=note("");msg.style.color="#ff8aa5";
+  btn("دخول","g",async()=>{msg.textContent="";try{persist("myname",nm.value.trim());await fbLogin(e.value.trim(),pw.value,nm.value);acctUI();cloudSync(true);toast("تم تسجيل الدخول ✅");d.close()}
+   catch(er){msg.textContent=(er instanceof TypeError?"تعذّر الاتصال بالإنترنت: ":"")+er.message}});
+ }else{
+  note("الموظف: "+fbs.name+"\nالإيميل: "+fbs.email);
+  note((syncErr?"⚠️ خطأ المزامنة: "+syncErr:"آخر مزامنة: "+(lastSync?fmt(lastSync):"—"))+"\nمستندات الأرشيف المشترك: "+toAr(remote.size)+(pend.length?"\nبانتظار الإرسال: "+toAr(pend.length):""));
+  btn("🔄 تحديث الآن","b",async()=>{await cloudSync(true);openAcct()});
+  btn("📎 نسخ رابط إعداد الموظفين","s",async()=>{const link=location.origin+location.pathname+"#cfg="+encodeURIComponent(btoa(JSON.stringify(cfg)));try{await navigator.clipboard.writeText(link);toast("تم نسخ الرابط")}catch(e){prompt("انسخ الرابط:",link)}});
+  btn("تسجيل الخروج","s",()=>{if(confirm("تسجيل الخروج؟ أرشيفك المحلي يبقى على الجهاز.")){fbLogout();d.close()}});
+ }
+ btn("إغلاق","s",()=>d.close());d.showModal();
+}
+$("#acct").onclick=openAcct;
+setInterval(()=>{if(!document.hidden)cloudSync(false)},20000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)cloudSync(false)});
+window.addEventListener("online",()=>cloudSync(true));
+acctUI();if(cfg&&fbs)cloudSync(true);
+
 openDb().then(()=>stats());
 })();
 </script>
