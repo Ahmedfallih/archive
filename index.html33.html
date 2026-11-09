@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>أرشفة المستندات</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f6ff;--card:#fff;--tx:#1d2340;--mut:#69708f;--bd:#e2e7f7}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12152b;--card:#1e2240;--tx:#eef0ff;--mut:#a3a9cc;--bd:#32386388}}
+:root[data-theme="dark"]{--bg:#12152b;--card:#1e2240;--tx:#eef0ff;--mut:#a3a9cc;--bd:#32386388}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:"Segoe UI",Tahoma,"Noto Naskh Arabic",Arial,sans-serif;min-height:100vh}
+header{padding:18px 16px 6px;text-align:center}
+h1{margin:0;font-size:22px}
+header p{margin:4px 0 0;color:var(--mut);font-size:13px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:12px 14px}
+.tab{border:0;border-radius:20px;padding:14px 4px 10px;color:#fff;font:inherit;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 3px 8px #0002;opacity:.78}
+.tab .i{font-size:30px;line-height:1}
+.tab:active{transform:scale(.92)}
+.tab.on{opacity:1;transform:translateY(-3px) scale(1.04);box-shadow:0 8px 16px #0003}
+.t1{background:linear-gradient(135deg,#ff7a45,#ff3d71)}.t2{background:linear-gradient(135deg,#3d8bff,#2cd0ff)}.t3{background:linear-gradient(135deg,#1fc16b,#8be04e)}.t4{background:linear-gradient(135deg,#9b5cff,#ff5cc8)}
+main{padding:4px 14px 40px;max-width:640px;margin:auto}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:16px;margin-bottom:12px}
+.hide{display:none}
+.big{width:100%;border:0;border-radius:18px;padding:18px;font:inherit;font-size:17px;font-weight:700;color:#fff;cursor:pointer;background:linear-gradient(135deg,#ff7a45,#ff3d71);transition:transform .15s}
+.big:active{transform:scale(.97)}
+.big.g{background:linear-gradient(135deg,#1fc16b,#8be04e)}.big.b{background:linear-gradient(135deg,#3d8bff,#2cd0ff)}.big.s{background:var(--bd);color:var(--tx)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px;font-weight:700}
+input[type=text],input[type=search]{width:100%;padding:13px;border-radius:14px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+input:focus{outline:0;border-color:#3d8bff}
+.prev{width:100%;border-radius:14px;border:1px solid var(--bd);background:#fff;display:block}
+.row{display:flex;gap:8px;margin-top:12px}.row>*{flex:1}
+.note{font-size:13px;color:var(--mut);text-align:center;margin:8px 0}
+.busy{text-align:center;padding:14px;font-weight:700;color:#3d8bff}
+.spin{display:inline-block;animation:sp 1s linear infinite}@keyframes sp{to{transform:rotate(360deg)}}
+.item{display:flex;gap:12px;align-items:center;cursor:pointer}
+.item img{width:64px;height:84px;object-fit:cover;border-radius:10px;border:1px solid var(--bd);background:#fff}
+.item b{display:block;font-size:16px}.item small{color:var(--mut);display:block;margin-top:3px}
+.stat{display:flex;gap:10px}.stat div{flex:1;text-align:center;border-radius:16px;padding:12px;color:#fff;font-weight:700}
+.stat span{display:block;font-size:26px}
+.toast{position:fixed;bottom:calc(20px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:30px;font-size:14px;z-index:9;max-width:90%}
+dialog{border:0;border-radius:20px;padding:14px;background:var(--card);color:var(--tx);width:min(92vw,500px)}
+dialog::backdrop{background:#000a}
+.gal{position:relative;margin-top:10px;background:linear-gradient(135deg,#9b5cff,#3d8bff)!important;overflow:visible}
+.sig{text-align:center;padding:26px 16px calc(34px + env(safe-area-inset-bottom,0px));direction:ltr}
+.sig i{display:block;width:90px;height:2px;margin:0 auto 14px;background:linear-gradient(90deg,transparent,#d4a017,transparent)}
+.sig small{display:block;font-family:Georgia,"Times New Roman",serif;font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--mut)}
+.sig b{display:block;margin-top:6px;font-family:Georgia,"Times New Roman",serif;font-size:24px;font-weight:700;letter-spacing:2px;background:linear-gradient(135deg,#b8860b,#f5d76e 45%,#b8860b);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 1px 0 #0000}
+.sig em{display:block;margin-top:4px;font-family:Georgia,serif;font-style:normal;font-size:15px;letter-spacing:6px;color:#d4a017}
+.toast{white-space:pre-line;text-align:center;line-height:1.6}
+:root{--red:#d11a2a;--navy:#1e3a8a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--red:#ff6b7a;--navy:#8fb3ff}}
+:root[data-theme="dark"]{--red:#ff6b7a;--navy:#8fb3ff}
+.item small.nv{color:var(--red);font-weight:700}
+.item small.em{color:var(--navy);font-weight:700}
+.item small.dt{color:var(--navy);font-size:12px;margin-top:4px}
+.item .trash{align-self:flex-start;margin-top:4px}
+.trash{border:0;background:#ffe3e8;color:#c0143c;border-radius:12px;width:40px;height:40px;font-size:18px;cursor:pointer;flex:none;transition:transform .15s}
+.trash:active{transform:scale(.88)}
+.trash.all{width:auto;padding:0 14px;font:inherit;font-weight:700;font-size:14px}
+.bar{display:flex;justify-content:space-between;align-items:center;margin:0 4px 10px;font-weight:700}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .trash{background:#3a1f2b;color:#ff8aa5}}
+:root[data-theme="dark"] .trash{background:#3a1f2b;color:#ff8aa5}
+
+/* ===== Liquid-glass theme ===== */
+body{background:linear-gradient(165deg,#e8f1fb 0%,#e3f2f4 55%,#e9f6ef 100%) fixed}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:linear-gradient(165deg,#0e1830 0%,#112338 55%,#0f2a30 100%) fixed}}
+:root[data-theme="dark"] body{background:linear-gradient(165deg,#0e1830 0%,#112338 55%,#0f2a30 100%) fixed}
+.tabs{gap:12px}
+.tab{position:relative;overflow:hidden;isolation:isolate;color:#2a2c4e;text-shadow:0 1px 0 rgba(255,255,255,.7);opacity:.9;border-radius:26px;padding:14px 4px 11px;
+ background:radial-gradient(90% 70% at 25% 8%,rgba(255,255,255,.9),rgba(255,255,255,0) 60%),linear-gradient(160deg,var(--g1),var(--g2));
+ box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.75),inset 0 3px 6px rgba(255,255,255,.9),inset 0 -10px 16px rgba(255,255,255,.28),0 10px 20px var(--sh);
+ -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:transform .25s cubic-bezier(.3,1.6,.5,1),box-shadow .25s,opacity .2s}
+.tab::before{content:"";position:absolute;z-index:-1;inset:4px 9px auto 9px;height:40%;border-radius:22px 22px 40px 40px/20px 20px 26px 26px;background:linear-gradient(rgba(255,255,255,.85),rgba(255,255,255,0))}
+.tab .i{display:block;line-height:0}
+.tab .i svg{width:32px;height:32px;fill:none;stroke:#2a2c4e;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 0 rgba(255,255,255,.8))}
+.tab:active{transform:scale(.9,.94)}
+.tab.on{opacity:1;transform:translateY(-4px) scale(1.05);box-shadow:inset 0 0 0 2px #fff,inset 0 3px 6px rgba(255,255,255,.95),inset 0 -10px 16px rgba(255,255,255,.3),0 14px 26px var(--sh),0 0 18px var(--sh)}
+.tab.on::after{content:"";position:absolute;z-index:-1;top:0;bottom:0;width:38%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.75),transparent);transform:skewX(-18deg);animation:shine 4.5s ease-in-out infinite}
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+.t1{--g1:#ffe27a;--g2:#e8a400;--sh:rgba(232,164,0,.6)}
+.t2{--g1:#d3db84;--g2:#7d8b1f;--sh:rgba(125,139,31,.65)}
+.t3{--g1:#c4f8de;--g2:#4fe0a0;--sh:rgba(30,190,125,.55)}
+.t4{--g1:#d6c2ff;--g2:#8a5cff;--sh:rgba(138,92,255,.6)}
+
+/* gold camera + red launching arrow */
+.t1 .i svg{stroke:#5a3a00}
+.t1{color:#4a3000}
+.tab .i svg{overflow:visible}
+.tab .i svg .arr{stroke:#e5102a;stroke-width:2.7;filter:drop-shadow(0 0 2px rgba(255,255,255,.9))}
+.t3.on .arr,.t3:hover .arr{animation:launch 1.7s cubic-bezier(.45,0,.55,1) infinite}
+@keyframes launch{
+ 0%,10%{transform:translateY(0);opacity:1}
+ 16%{transform:translateY(1.2px);opacity:1}
+ 52%{transform:translateY(-10px);opacity:0}
+ 66%{transform:translateY(-10px);opacity:0}
+ 67%{transform:translateY(3px);opacity:0}
+ 82%{transform:translateY(0);opacity:1}
+ 100%{transform:translateY(0);opacity:1}}
+:root{color-scheme:dark}
+
+/* per-icon motion: active tab (or hover on desktop) */
+.tab .i svg .dot{fill:#ff1f35;stroke:none;opacity:0}
+.t1.on .lens,.t1:hover .lens{animation:lensred 1s ease-in-out infinite}
+.t1.on .dot,.t1:hover .dot{animation:dotred 1s ease-in-out infinite}
+@keyframes lensred{0%,100%{stroke:#5a3a00;filter:none}50%{stroke:#ff1f35;filter:drop-shadow(0 0 3px #ff1f35)}}
+@keyframes dotred{0%,100%{opacity:0}50%{opacity:1;filter:drop-shadow(0 0 3px #ff1f35)}}
+.tab .i svg .mag{transform-origin:12px 12px}
+.t2.on .mag,.t2:hover .mag{animation:scan 1.8s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translate(-2.2px,1.4px) rotate(-16deg)}25%,75%{transform:translate(0,-2px) rotate(0)}50%{transform:translate(2.2px,1.4px) rotate(16deg)}}
+.tab .i svg .sh{fill:#fff;stroke:#2a2c4e;stroke-width:1.3;opacity:0}
+.t4.on .sh,.t4:hover .sh{animation:fdrop 1.8s ease-in infinite}
+.t4.on .sh.s2,.t4:hover .sh.s2{animation-delay:.6s}
+.t4.on .sh.s3,.t4:hover .sh.s3{animation-delay:1.2s}
+@keyframes fdrop{0%{transform:translateY(-3px);opacity:0}12%{opacity:1}68%{transform:translateY(11px);opacity:1}86%{transform:translateY(14px);opacity:0}100%{transform:translateY(14px);opacity:0}}
+.warn{border-color:#ff9f1a!important;background:rgba(255,159,26,.14)!important}
+#hint{background:rgba(255,159,26,.16);color:#b45f00;border:1px solid #ffb347;border-radius:12px;padding:9px 12px;margin:8px 0;font-size:13px;line-height:1.6}
+:root[data-theme="dark"] #hint{color:#ffc46b}
+.tab .i svg .sh.s1{fill:#ff4d6d}.tab .i svg .sh.s2{fill:#ffd23f}.tab .i svg .sh.s3{fill:#2bd4c8}
+.tab .i svg .sh{stroke:#1f2350;stroke-width:1.2;filter:drop-shadow(0 0 1.5px rgba(255,255,255,.9))}
+.chips{display:flex;gap:8px;margin:2px 0 8px}
+.chip{flex:1;border:2px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:14px;padding:10px 6px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:transform .15s}
+.chip:active{transform:scale(.95)}
+.chip.on{border-color:#3d8bff;background:rgba(61,139,255,.16);box-shadow:0 0 0 2px rgba(61,139,255,.35)}
+.item .tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px;margin-bottom:4px;background:#e9efff;color:#2a3f9a}
+.item .tag.bio{background:#e3f6ec;color:#0b7a45}
+:root[data-theme="dark"] .item .tag{background:#2b3270;color:#b9c8ff}
+:root[data-theme="dark"] .item .tag.bio{background:#174a35;color:#8ff0bf}
+.pbar{height:12px;border-radius:8px;background:var(--bd);overflow:hidden;margin:10px 0}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#2cd0ff,#1fc16b);transition:width .3s}
+.bi{display:flex;gap:10px;align-items:center;border-top:1px solid var(--bd);padding:10px 0}
+.bi img{width:48px;height:64px;object-fit:cover;border-radius:8px;background:#fff;flex:none}
+.bi div{flex:1;min-width:0;font-size:13px}.bi b{display:block;font-size:14px}
+.bi small{color:var(--mut);display:block;margin-top:2px;line-height:1.5}
+.bi .chip{flex:none;padding:8px 10px}
+.item small.flag{color:#ff9f1a;font-weight:700;font-size:11.5px}
+.tchip{flex:1;border:2px solid var(--bd);background:var(--bg);color:var(--tx);border-radius:14px;padding:10px 6px;font:inherit;font-weight:700;font-size:13px;cursor:pointer;transition:border-color .25s,box-shadow .25s,background .25s}
+.tchip:active{transform:scale(.96)}
+.tchip.gone{display:none}
+.tchip.sel{border-color:#1fc16b;background:rgba(31,193,107,.14);box-shadow:0 0 0 2px rgba(31,193,107,.35)}
+#chips[data-s="loading"] .tchip{border-color:#f5b800;background:rgba(245,184,0,.10);box-shadow:0 0 0 2px rgba(245,184,0,.30);pointer-events:none;animation:goldpulse 1.1s ease-in-out infinite alternate}
+@keyframes goldpulse{from{box-shadow:0 0 0 1px rgba(245,184,0,.25)}to{box-shadow:0 0 0 5px rgba(245,184,0,.55)}}
+.chips{flex-wrap:wrap}.tchip{flex:1 1 28%;font-size:12.5px;padding:9px 4px}
+header{position:relative}
+#acct{position:absolute;top:16px;left:14px;width:44px;height:44px;border-radius:50%;border:0;cursor:pointer;display:grid;place-items:center;
+ background:radial-gradient(90% 70% at 30% 15%,rgba(255,255,255,.55),rgba(255,255,255,0) 60%),linear-gradient(160deg,#6f7bd8,#3a4388);
+ box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.5),0 6px 14px rgba(0,0,0,.35);transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+#acct:active{transform:scale(.88)}
+#acct svg{width:23px;height:23px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+#acct::after{content:"";position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;border:2px solid #14183a;background:#8a8fb5}
+#acct.wait::after{background:#ffb347;animation:goldpulse 1.1s ease-in-out infinite alternate}
+#acct.ok::after{background:#1fc16b}
+#acct.err::after{background:#ff4d6d}
+input[type=email],input[type=password]{width:100%;padding:13px;border-radius:14px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;font-size:16px}
+</style>
+</head>
+<body>
+<header><button id="acct" type="button" aria-label="الحساب والأرشيف المشترك"></button><h1>🗂️ أرشفة المستندات</h1><p>صوّر • استخرج • احفظ • صدّر</p></header>
+<nav class="tabs">
+ <button class="tab t1 on" data-v="cap"><span class="i"><svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle class="lens" cx="12" cy="13" r="3.6"/><circle class="dot" cx="12" cy="13" r="1.8"/></svg></span>تصوير</button>
+ <button class="tab t2" data-v="srch"><span class="i"><svg viewBox="0 0 24 24"><g class="mag"><circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/></g></svg></span>بحث</button>
+ <button class="tab t3" data-v="exp"><span class="i"><svg viewBox="0 0 24 24"><g class="arr"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5"/></g><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg></span>تصدير</button>
+ <button class="tab t4" data-v="all"><span class="i"><svg viewBox="0 0 24 24"><rect class="sh s1" x="5.5" y="1" width="5.5" height="7" rx="1"/><rect class="sh s2" x="9.5" y="1" width="5.5" height="7" rx="1"/><rect class="sh s3" x="13.5" y="1" width="5.5" height="7" rx="1"/><path d="M3 7a2 2 0 0 1 2-2h4l2 2.5h8a2 2 0 0 1 2 2V18a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg></span>الأرشيف</button>
+</nav>
+<main>
+ <section id="cap">
+  <div class="card" id="capStart">
+   <button class="big" id="shoot">📷 التقط صورة المستند</button>
+   <button class="big gal" id="gal">🖼️ اختر من الاستوديو (صورة أو عدة صور)</button>
+   <button class="big s" id="keyBtn" style="margin-top:10px;padding:10px;font-size:14px">🔑 مفتاح الذكاء الاصطناعي</button>
+   <button class="big s" id="keyBtn2" style="margin-top:8px;padding:10px;font-size:14px">🔑 مفتاح احتياطي (اختياري)</button>
+   <label class="note" style="display:flex;gap:8px;align-items:center;justify-content:center;cursor:pointer"><input type="checkbox" id="hq"> 🎯 دقة عالية (أبطأ وتستهلك بيانات أكثر)</label>
+   <p class="note">وجّه الكاميرا على البطاقة مع ظهور اسم الموظف أسفل المستند. سيتم قص الأطراف وتحسين الصورة تلقائياً.</p>
+  </div>
+  <div class="card hide" id="batchCard"><b id="bTitle" style="font-size:16px"></b><div class="pbar"><i id="bFill"></i></div><div id="bStats" class="note" style="line-height:1.9"></div><div id="bNote" class="note" style="color:#ffb347;display:none;line-height:1.7"></div><button class="big s" id="bRetry" style="padding:10px;font-size:14px;margin-bottom:8px;display:none">🔁 أعد كل المستندات الفاشلة</button><button class="big s" id="bStop" style="padding:10px;font-size:14px">⏹ إيقاف الدفعة</button><div id="bList"></div></div>
+  <div class="card hide" id="capForm">
+   <img class="prev" id="prev" alt="" style="cursor:zoom-in">
+   <div class="row" style="margin:8px 0"><button type="button" class="chip on" id="rotBtn">🔄 تدوير الصورة</button><button type="button" class="chip on" id="zoomBtn">🔍 تكبير للمراجعة</button></div>
+   <div id="err" class="hide" style="background:#ffe8e8;color:#a00;border-radius:12px;padding:10px;margin:8px 0;font-size:13px;direction:ltr;text-align:left;word-break:break-word"></div>
+   <div id="hint" class="hide"></div>
+   <div class="busy hide" id="busy"><span class="spin">⏳</span> الذكاء الاصطناعي يقرأ المستند...</div>
+   <div class="chips" id="chips" data-s="manual"><button type="button" class="tchip" data-t="deliv">📄 تسليم بطاقة</button><button type="button" class="tchip" data-t="bio">🧬 تسجيل بايومتري</button><button type="button" class="tchip" data-t="card">🪪 تسليم بطاقة الناخب</button></div>
+   <small id="chipHint" class="note" style="display:none;margin:-2px 0 6px">اضغط على النوع لتغييره</small>
+   <label id="lName">اسم المستلم</label><input type="text" id="fName">
+   <div id="sug" style="display:none;margin:6px 0"></div>
+   <label>رقم الناخب</label><input type="text" id="fNum" inputmode="numeric">
+   <label id="lEmp">اسم الموظف الذي سلّم البطاقة</label><input type="text" id="fEmp">
+   <label id="lPhone" style="display:none">رقم هاتف الناخب</label><input type="text" id="fPhone" inputmode="tel" style="display:none">
+   <div id="backBox" style="display:none"><label id="lCardNo">رقم البطاقة (من الوجه الخلفي، أعلى اليسار)</label><input type="text" id="fCardNo" inputmode="numeric"><img class="prev" id="prevBack" alt="" style="display:none;margin-top:10px"><div class="row"><button type="button" class="big b" id="backCam" style="padding:12px;font-size:14px">📷 صوّر الوجه الخلفي</button><button type="button" class="big gal" id="backGal" style="padding:12px;font-size:14px">🖼️ من الاستوديو</button></div></div>
+   <div class="row"><button class="big g" id="save">💾 حفظ</button><button class="big s" id="cancel">إلغاء</button></div>
+  </div>
+ </section>
+ <section id="srch" class="hide">
+  <div class="card"><input type="search" id="q" placeholder="اكتب اسم المستلم أو رقم الناخب أو الموظف..."><button class="big b" id="aiSearch" style="margin-top:10px;padding:12px;font-size:15px">🤖 بحث ذكي بالذكاء الاصطناعي</button></div>
+  <div id="sRes"></div>
+ </section>
+ <section id="exp" class="hide">
+  <div class="card"><div class="stat"><div style="background:#3d8bff"><span id="cnt">0</span>مستند</div><div style="background:#1fc16b"><span id="cnt2">0</span>صورة</div></div></div>
+  <div class="card">
+   <button class="big g" id="xl">📊 ملف الإكسل</button>
+   <div style="height:10px"></div>
+   <button class="big b" id="zp">🖼️ ملف الصور (ZIP)</button>
+   <p class="note">كل صورة باسم رقم الناخب. يُحفظ الملفان في جهازك.</p>
+  </div>
+ </section>
+ <section id="all" class="hide"><div class="bar"><span id="aCnt"></span><button class="trash all" id="delAll">🗑️ حذف الكل</button></div><div id="aRes"></div></section>
+</main>
+<footer class="sig"><i></i><small>Designed by</small><b>Ahmed Fleih</b><em>2741</em></footer>
+<dialog id="dlg"></dialog>
+<input type="file" id="file" accept="image/*" capture="environment" class="hide">
+<input type="file" id="file2" accept="image/*" multiple class="hide">
+<input type="file" id="fileBack" accept="image/*" capture="environment" class="hide"><input type="file" id="fileBack2" accept="image/*" class="hide">
+<script>
+(function(){"use strict";
+const $=s=>document.querySelector(s);
+let db,cur=null,sample=null,dl=null;
+/* ---------- IndexedDB ---------- */
+const openDb=()=>new Promise(r=>{try{const q=indexedDB.open("arch",1);q.onupgradeneeded=()=>q.result.createObjectStore("d",{keyPath:"id",autoIncrement:true});q.onsuccess=()=>{db=q.result;r()};q.onerror=()=>r()}catch(e){r()}});
+const mem=[];
+const all=()=>new Promise(r=>{if(!db)return r(mem.slice());const q=db.transaction("d").objectStore("d").getAll();q.onsuccess=()=>r(q.result);q.onerror=()=>r([])});
+const put=o=>new Promise(r=>{if(!db){o.id=mem.length+1;mem.push(o);return r()}const q=db.transaction("d","readwrite").objectStore("d").add(o);q.onsuccess=()=>r();q.onerror=()=>r()});
+const clearAll=()=>new Promise(r=>{if(!db){mem.length=0;return r()}const q=db.transaction("d","readwrite").objectStore("d").clear();q.onsuccess=()=>r();q.onerror=()=>r()});
+const upd=o=>new Promise(r=>{if(!db){const i=mem.findIndex(m=>m.id===o.id);if(i>=0)mem[i]=o;return r()}const q=db.transaction("d","readwrite").objectStore("d").put(o);q.onsuccess=()=>r();q.onerror=()=>r()});
+const del=id=>new Promise(r=>{if(!db){const i=mem.findIndex(x=>x.id==id);if(i>=0)mem.splice(i,1);return r()}const q=db.transaction("d","readwrite").objectStore("d").delete(id);q.onsuccess=()=>r()});
+/* ---------- UI ---------- */
+function toast(t,ms){const e=document.createElement("div");e.className="toast";e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),ms||2600)}
+const AR="٠١٢٣٤٥٦٧٨٩",toAr=s=>String(s).replace(/[0-9]/g,d=>AR[d]);
+const toEn=s=>String(s).replace(/[٠-٩]/g,d=>AR.indexOf(d)).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d));
+const fmt=ts=>{const d=new Date(ts),p=n=>String(n).padStart(2,"0");let h=d.getHours();const ap=h>=12?"م":"ص";h=h%12||12;return toAr(d.getFullYear()+"/"+p(d.getMonth()+1)+"/"+p(d.getDate())+"  "+h+":"+p(d.getMinutes())+" "+ap)};
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("on",x==b));["cap","srch","exp","all"].forEach(s=>$("#"+s).classList.toggle("hide",s!=b.dataset.v));if(b.dataset.v=="exp")stats();if(b.dataset.v=="all")list("#aRes",null);if(b.dataset.v=="srch")list("#sRes",$("#q").value)});
+const urlOf=b=>URL.createObjectURL(b);
+async function stats(){const a=await all();$("#cnt").textContent=a.length;$("#cnt2").textContent=a.length}
+const FT={deliv:{label:"تسليم بطاقة",ico:"📄",nameL:"اسم المستلم",sheet:"تسليم البطاقات",dir:"تسليم_البطاقات"},bio:{label:"تسجيل بايومتري",ico:"🧬",nameL:"اسم الناخب واسم الأب",sheet:"التسجيل البايومتري",dir:"التسجيل_البايومتري"},card:{label:"تسليم بطاقة الناخب",ico:"🪪",nameL:"اسم الناخب واسم الأب",sheet:"تسليم بطاقة الناخب",dir:"تسليم_بطاقة_الناخب"}};
+const tyOf=x=>x.type==="bio"||x.type==="card"?x.type:"deliv";
+const third=x=>tyOf(x)==="deliv"?x.emp:x.phone;
+let aiIds=null;
+const norm=s=>toEn(String(s||"")).toLowerCase().replace(/[\u064B-\u065F\u0670\u0640]/g,"").replace(/[أإآٱ]/g,"ا").replace(/[ىیې]/g,"ي").replace(/ة/g,"ه").replace(/ؤ/g,"و").replace(/ئ/g,"ي").replace(/ک/g,"ك").replace(/[^\p{L}\p{N}\s]/gu," ").replace(/\s+/g," ").trim();
+const lev=(a,b,m)=>{const n=a.length,k=b.length;let p=Array.from({length:k+1},(_,j)=>j);for(let i=1;i<=n;i++){const c=[i];let mn=i;for(let j=1;j<=k;j++){const v=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));c[j]=v;if(v<mn)mn=v}if(mn>m)return m+1;p=c}return p[k]};
+const tokScore=(q,h)=>{if(h===q)return 4;if(h.startsWith(q))return 3;if(h.includes(q))return 2;const m=q.length>=7?2:q.length>=4?1:0;return m&&Math.abs(h.length-q.length)<=m&&lev(q,h,m)<=m?1:0};
+const smart=(a,q)=>{const qt=norm(q).split(" ").filter(Boolean);if(!qt.length)return a;
+ return a.map(x=>{const h0=norm((x.name||"")+" "+(x.num||"")+" "+(x.emp||"")+" "+(x.phone||"")+" "+(x.cardNo||"")+" "+FT[tyOf(x)].label).split(" ").filter(Boolean),ht=h0.concat(h0.slice(1).map((t,i)=>h0[i]+t));let sc=0;
+  for(const t of qt){let best=0;for(const h of ht){best=Math.max(best,tokScore(t,h));if(best===4)break}if(!best)return null;sc+=best}
+  return{x,sc}}).filter(Boolean).sort((p,r)=>r.sc-p.sc||(r.x.ts||0)-(p.x.ts||0)).map(o=>o.x)};
+async function list(sel,q){
+ let a=await allMerged();a.reverse();a.sort((p,r)=>(r.ts||0)-(p.ts||0));
+ if(sel==="#aRes"){$("#aCnt").textContent="عدد المستندات: "+toAr(a.length);$("#delAll").style.display=a.length?"":"none"}q=(q||"").trim();
+ if(sel==="#sRes"&&aiIds){const all0=a;a=aiIds.map(id=>all0.find(x=>x.id==id)).filter(Boolean)}else if(q)a=smart(a,q);
+ const box=$(sel);box.innerHTML="";
+ if(!a.length){box.innerHTML='<p class="note">'+(q||aiIds?"لا توجد نتائج"+(aiIds?"":" — جرّب «🤖 بحث ذكي» بالأسفل"):"لا توجد مستندات بعد")+'</p>';return}
+ if(sel==="#sRes"&&(q||aiIds))box.innerHTML='<p class="note">عدد النتائج: '+toAr(a.length)+(aiIds?" (بحث ذكي)":"")+'</p>';
+ a.forEach(x=>{const d=document.createElement("div");d.className="card item";
+  const im=document.createElement(x.remote?"div":"img");if(x.remote){im.style.cssText="width:64px;height:84px;border-radius:10px;border:1px dashed var(--bd);display:grid;place-items:center;font-size:24px;flex:none";im.textContent="☁️"}else im.src=urlOf(x.img);
+  const t=document.createElement("div");
+  t.style.flex="1";t.style.minWidth="0";t.innerHTML='<b></b><small class="nv"></small><small class="em"></small><small class="dt"></small>';
+  t.children[0].textContent=x.name||"—";t.children[1].textContent="رقم الناخب: "+(x.num||"—");t.children[2].textContent=(tyOf(x)==="deliv"?"الموظف: ":"الهاتف: ")+(third(x)||"—")+(tyOf(x)==="card"?" • البطاقة: "+(x.cardNo||"—"):"");t.children[3].textContent=(x.ts?fmt(x.ts):toAr(x.date||""))+(x.by?" • أرشفه: "+x.by:"");
+  const tb=document.createElement("button");tb.className="trash";tb.textContent="🗑️";tb.setAttribute("aria-label","حذف");
+  tb.onclick=async ev=>{ev.stopPropagation();if(confirm("حذف مستند «"+(x.name||x.num||"")+"» نهائياً؟"+(cfg?"\nسيُحذف أيضاً من الأرشيف المشترك.":""))){await del(x.id);cloudDel(x);list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم الحذف")}};
+  const tg=document.createElement("span");tg.className="tag "+tyOf(x);tg.textContent=FT[tyOf(x)].ico+" "+FT[tyOf(x)].label;t.insertBefore(tg,t.firstChild);
+  if(x.flag){const fl=document.createElement("small");fl.className="flag";fl.textContent="🟠 ملاحظة: "+x.flag;t.append(fl)}
+  if(x.remote)tb.onclick=ev=>{ev.stopPropagation();if(confirm("حذف سجل «"+(x.name||x.num)+"» الذي أرشفه «"+(x.by||"موظف")+"» من الأرشيف المشترك؟\nيلزم أن تكون مديراً. صورته وبياناته المحلية تبقى على جهازه."))cloudDelRemote(x)};
+  d.append(im,t,tb);d.onclick=()=>x.remote?toast("☁️ الصورة محفوظة على جهاز: "+(x.by||"موظف آخر")):show(x);box.append(d)});
+}
+$("#q").oninput=e=>{aiIds=null;list("#sRes",e.target.value)};
+$("#aiSearch").onclick=async()=>{
+ const q=$("#q").value.trim();if(!q){toast("اكتب ما تبحث عنه أولاً");return}
+ const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑 بصفحة التصوير)");return}
+ const a=await allMerged();if(!a.length){toast("لا توجد مستندات");return}
+ let ok=false;try{ok=localStorage.getItem("aiok")==="1"}catch(e){}
+ if(!ok){if(!confirm("للبحث الذكي سيتم إرسال أسماء وأرقام المستندات (بدون الصور) إلى خدمة الذكاء الاصطناعي. هل توافق؟"))return;try{localStorage.setItem("aiok","1")}catch(e){}}
+ const b=$("#aiSearch"),old=b.textContent;b.disabled=true;b.textContent="⏳ الذكاء الاصطناعي يبحث...";
+ try{
+  const rows=a.slice(-600).map(x=>x.id+"|"+(x.name||"")+"|"+(x.num||"")+"|"+(third(x)||"")+"|"+FT[tyOf(x)].label).join("\n");
+  const p="لديك سجلات مستندات بصيغة: id|الاسم|رقم الناخب|اسم الموظف أو رقم الهاتف|نوع الاستمارة.\n"+rows+"\n\nطلب البحث: «"+q+"»\nأعد أفضل السجلات المطابقة مع مراعاة اختلاف الإملاء (الهمزات، الياء والألف المقصورة، التاء المربوطة، الحروف الكردية)، وأخطاء القراءة الآلية في الحروف والأرقام، والأسماء الجزئية أو بترتيب مختلف، وأسماء الموظفين. أعد JSON فقط: {\"ids\":[...]} مرتبة من الأفضل، بحد أقصى 20، ومصفوفة فارغة إن لم يوجد شيء مناسب.";
+  const r=jsonOf(await aiCall(key,p,null));
+  aiIds=(Array.isArray(r.ids)?r.ids:[]).slice(0,20);
+  await list("#sRes",q);
+ }catch(e){toast("تعذّر البحث الذكي: "+String(e.message||e).slice(0,80))}
+ b.disabled=false;b.textContent=old;
+};
+$("#delAll").onclick=async()=>{const n=(await all()).length;if(!n)return;
+ if(!confirm("⚠️ سيتم حذف كل المستندات ("+toAr(n)+") من هذا الجهاز نهائياً.\nتأكد أنك صدّرت نسخة احتياطية (📤 تصدير) قبل الحذف.\n\nهل تريد المتابعة؟"))return;
+ if(!confirm("تأكيد أخير: حذف كل المستندات؟ لا يمكن التراجع."))return;
+ await clearAll();list("#aRes",null);list("#sRes",$("#q").value);stats();toast("تم حذف كل المستندات")};
+function show(x){
+ const d=$("#dlg");d.innerHTML="";
+ const im=document.createElement("img");im.className="prev";im.src=urlOf(x.img);
+ const p=document.createElement("p");p.textContent=`${FT[tyOf(x)].label} • ${x.name||"—"} • ${x.num||"—"} • ${third(x)||"—"}`;
+ const r=document.createElement("div");r.className="row";
+ const c=document.createElement("button");c.className="big s";c.textContent="إغلاق";c.onclick=()=>d.close();
+ const k=document.createElement("button");k.className="big";k.textContent="🗑️ حذف";
+ k.onclick=async()=>{if(confirm("حذف هذا المستند؟"+(cfg?"\nسيُحذف أيضاً من الأرشيف المشترك.":""))){await del(x.id);cloudDel(x);d.close();list("#aRes",null);list("#sRes",$("#q").value)}};
+ r.append(c,k);d.append(im);if(x.img2){const i2=document.createElement("img");i2.className="prev";i2.style.marginTop="8px";i2.src=urlOf(x.img2);d.append(i2)}d.append(p,r);d.showModal();
+}
+/* ---------- Capture + crop ---------- */
+$("#shoot").onclick=()=>{$("#file").value="";$("#file").click()};
+const onPick=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ $("#capStart").classList.add("hide");$("#capForm").classList.remove("hide");curItem=null;renderBatch();setChips("loading");
+ $("#busy").classList.remove("hide");["#fName","#fNum","#fEmp","#fPhone","#fCardNo"].forEach(s=>$(s).value="");resetBack();
+ const bmp=await createImageBitmap(f).catch(()=>null);
+ if(!bmp){toast("تعذّر فتح الصورة");reset();return}
+ const sc=Math.min(1,capDim()/Math.max(bmp.width,bmp.height));
+ const full=document.createElement("canvas");full.width=Math.round(bmp.width*sc);full.height=Math.round(bmp.height*sc);
+ full.getContext("2d").drawImage(bmp,0,0,full.width,full.height);
+ const box=findDoc(full);
+ const out=document.createElement("canvas");out.width=box.w;out.height=box.h;
+ const c=out.getContext("2d");
+ c.drawImage(full,box.x,box.y,box.w,box.h,0,0,box.w,box.h);
+ const small=await compressForAI(out,"gray");enhance(out,"color");
+ const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
+ cur={img:blob};$("#prev").src=urlOf(blob);
+ await extract(small,blob);
+};
+$("#file").onchange=onPick;$("#file2").onchange=onPick;
+$("#gal").onclick=()=>{$("#file2").value="";$("#file2").click()};
+function findDoc(cv){ // قص تقريبي لحواف المستند: أكبر منطقة فاتحة عن الخلفية
+ const w=160,h=Math.round(160*cv.height/cv.width),t=document.createElement("canvas");t.width=w;t.height=h;
+ const g=t.getContext("2d");g.drawImage(cv,0,0,w,h);const d=g.getImageData(0,0,w,h).data,L=[];
+ for(let i=0;i<d.length;i+=4)L.push(.3*d[i]+.59*d[i+1]+.11*d[i+2]);
+ const hist=new Array(256).fill(0);L.forEach(v=>hist[v|0]++);
+ let sum=0;for(let i=0;i<256;i++)sum+=i*hist[i];let sB=0,wB=0,mx=0,th=128;
+ for(let i=0;i<256;i++){wB+=hist[i];if(!wB)continue;const wF=L.length-wB;if(!wF)break;sB+=i*hist[i];const m=sB/wB-(sum-sB)/wF,v=wB*wF*m*m;if(v>mx){mx=v;th=i}}
+ let x0=w,y0=h,x1=0,y1=0,n=0;
+ for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(L[y*w+x]>th){n++;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y}
+ const bw=x1-x0,bh=y1-y0;
+ if(n<w*h*.15||bw<w*.4||bh<h*.4||bw*bh>w*h*.97)return{x:0,y:0,w:cv.width,h:cv.height};
+ const k=cv.width/w,m=-3;
+ const X=Math.max(0,(x0+m)*k),Y=Math.max(0,(y0+m)*k);
+ return{x:Math.round(X),y:Math.round(Y),w:Math.round(Math.min(cv.width-X,(bw-2*m)*k)),h:Math.round(Math.min(cv.height-Y,(bh-2*m)*k))};
+}
+/* ---------- AI extraction ---------- */
+const P=`Iraqi voter documents (Arabic/Kurdish, handwritten or printed; image may be rotated). Reply JSON only: {"t":"","n":"","v":"","e":"","p":"","o":"","u":[]}
+t: "d" if paper form titled «استمارة تسليم بطاقات الناخبين الإلكترونية», "b" if paper form titled «استمارة التسجيل البايومتري», "c" if the FRONT of the small voter ID card (has a person's photo).
+d: n=«اسم المستلم» at top (cross-check with table column «اسم صاحب البطاقة»); v=«رقم الناخب» field only (NOT card no., doc no., red serial; cross-check with table); e=name beside «اسم موظف التسليم» at bottom (not signature).
+b: n=«اسم الناخب» followed by «اسم الأب» (two names joined by one space: voter first, father second; do NOT add grandfather or surname); v=digits in the boxes beside «رقم الناخب»; p=«رقم هاتف الناخب».
+c: n=voter's first name then father's name (first two names only, joined by one space; no grandfather/surname); v=«رقم الناخب» printed on the card (8 digits).
+o: where the document's TOP (its title) is in the image: "u" up, "r" right, "l" left, "d" down.
+Hints: boxed digits are usually Eastern-Arabic (٠-٩): read box by box; voter number = 8 digits; Iraqi mobile = 11 digits starting 07. Spell names in standard Arabic; ignore signatures, stamps and crossed-out text.
+Digits 0-9 only, no spaces. u=list of keys among n,v,e,p you are unsure of. Empty string if absent; never guess.`;
+const PB=`Back of an Iraqi voter ID card (image may be rotated). Read the card number printed at the TOP-LEFT corner when the card is upright. Reply JSON only: {"c":"digits 0-9 only","u":false}. u=true if unsure.`;
+const P2=`Iraqi voter form. Read ONLY «رقم الناخب» (compare the field with the repeated number in the table below). Reply JSON only: {"v":"digits 0-9 only","u":false}. u=true if unsure.`;
+const compact=r=>{if(r.form_type!==undefined||r.voter_number!==undefined)return r;const m={n:"voter_name",v:"voter_number",e:"employee_name",p:"phone"};
+ return{form_type:r.t==="b"?"biometric":r.t==="d"?"delivery":r.t==="c"?"card":"",voter_name:r.n||"",voter_number:r.v||"",employee_name:r.e||"",phone:r.p||"",uncertain:(Array.isArray(r.u)?r.u:[]).map(k=>m[k]||k),o:r.o||""}};
+const sleep=(ms,sig)=>new Promise((res,rej)=>{const t=setTimeout(res,ms);if(sig)sig.addEventListener("abort",()=>{clearTimeout(t);rej(new DOMException("Aborted","AbortError"))},{once:true})});
+const hqOn=()=>{try{return localStorage.getItem("hq")==="1"}catch(e){return false}};
+const capDim=()=>hqOn()?2400:1800;
+function enhance(canvas,mode){ // توازن ألوان + تمديد المستويات: يزيل الصبغة ويقوّي وضوح الحبر
+ const w=canvas.width,h=canvas.height,ctx=canvas.getContext("2d"),img=ctx.getImageData(0,0,w,h),d=img.data;
+ const H=[new Uint32Array(256),new Uint32Array(256),new Uint32Array(256)],HG=new Uint32Array(256);let n=0;
+ for(let i=0;i<d.length;i+=20){H[0][d[i]]++;H[1][d[i+1]]++;H[2][d[i+2]]++;n++}
+ const pct=(hh,p)=>{let c=0;const t=n*p;for(let v=0;v<256;v++){c+=hh[v];if(c>=t)return v}return 255};
+ const wp=[0,1,2].map(k=>Math.max(60,pct(H[k],.97)));
+ for(let i=0;i<d.length;i+=20){HG[Math.min(255,(.299*d[i]*255/wp[0]+.587*d[i+1]*255/wp[1]+.114*d[i+2]*255/wp[2])|0)]++}
+ const lo=pct(HG,.015),hi=Math.max(lo+40,pct(HG,.85)),k=255/(hi-lo),cl=v=>v<0?0:v>255?255:v;
+ for(let i=0;i<d.length;i+=4){
+  const r=Math.min(255,d[i]*255/wp[0]),g=Math.min(255,d[i+1]*255/wp[1]),b=Math.min(255,d[i+2]*255/wp[2]);
+  if(mode==="gray"){const y=cl((.299*r+.587*g+.114*b-lo)*k);d[i]=d[i+1]=d[i+2]=255*Math.pow(y/255,1.15)}
+  else{d[i]=cl((r-lo)*k);d[i+1]=cl((g-lo)*k);d[i+2]=cl((b-lo)*k)}}
+ ctx.putImageData(img,0,0);
+}
+async function rotBlob(blob,deg){
+ const bmp=await createImageBitmap(blob),d=((deg%360)+360)%360,sw=d%180?bmp.height:bmp.width,sh=d%180?bmp.width:bmp.height,c=document.createElement("canvas");
+ c.width=sw;c.height=sh;const g=c.getContext("2d");g.translate(sw/2,sh/2);g.rotate(d*Math.PI/180);g.drawImage(bmp,-bmp.width/2,-bmp.height/2);
+ const out=await new Promise(r=>c.toBlob(r,"image/jpeg",.88));c.width=0;if(bmp.close)bmp.close();return out;
+}
+async function compressForAI(src,mode=null,maxDim=hqOn()?2200:1600,q=hqOn()?.85:.75){ // ضغط وتصغير بجهة العميل قبل الإرسال
+ const k=Math.min(1,maxDim/Math.max(src.width,src.height)),c=document.createElement("canvas");
+ c.width=Math.round(src.width*k);c.height=Math.round(src.height*k);
+ const g=c.getContext("2d");g.imageSmoothingQuality="high";g.drawImage(src,0,0,c.width,c.height);if(mode)enhance(c,mode);
+ const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",q));c.width=0;return blob;
+}
+const lsGet=k=>{try{return localStorage.getItem(k)||""}catch(e){return ""}};
+const getKeys=()=>[...new Set([lsGet("ak"),lsGet("ak2")].filter(Boolean))];
+const getKey=()=>getKeys()[0]||"";
+let att=1;
+function jsonOf(t){const m=String(t).match(/\{[\s\S]*\}/);if(!m)throw new Error("رد غير متوقع: "+String(t).slice(0,150));return JSON.parse(m[0])}
+async function aiOne(key,prompt,blob,signal){
+ const fx=async(u,o)=>{for(let k=0;;k++){try{return await fetch(u,o)}catch(e){if((e&&e.name==="AbortError")||k>=2)throw e;await sleep(1200*(k+1),signal)}}};
+ const b64=blob?await new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result.split(",")[1]);f.readAsDataURL(blob)}):null;
+ if(key.startsWith("sk-ant")){
+  const c=[];if(b64)c.push({type:"image",source:{type:"base64",media_type:"image/jpeg",data:b64}});c.push({type:"text",text:prompt});
+  const res=await fx("https://api.anthropic.com/v1/messages",{signal,method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:300,messages:[{role:"user",content:c}]})});
+  const j=await res.json().catch(()=>({}));
+  if(!res.ok){const m0=(j.error&&j.error.message)||"غير معروف",e=new Error("خطأ "+res.status+": "+m0);if(res.status===401||res.status===403)e.badKey=true;if(res.status===429||/credit balance/i.test(m0))e.quota=true;throw e}
+  return j.content.map(c=>c.text||"").join("");
+ }
+ let cached="";try{cached=localStorage.getItem("gm")||""}catch(e){}
+ const kid=key.slice(-8);let dead={};try{dead=JSON.parse(localStorage.getItem("gdead")||"{}")}catch(e){}
+ const alive=m=>!(dead[kid+"|"+m]&&dead[kid+"|"+m].u>Date.now());
+ const kill=(m,ms)=>{dead[kid+"|"+m]={u:Date.now()+Math.min(ms,2*3600e3),r:ms};try{localStorage.setItem("gdead",JSON.stringify(dead))}catch(e){}};
+ let order=[...new Set([cached,"gemini-flash-latest"].filter(Boolean))],loaded=false,thinkOff=true,last="";
+ const extend=async()=>{loaded=true;let dyn=[];
+  try{const lr=await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200&key="+encodeURIComponent(key),{signal});const lj=await lr.json();
+   dyn=(lj.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes("generateContent")&&/flash/.test(m.name)&&!/image|tts|live|audio|thinking|exp|preview|robotics|computer/.test(m.name)).map(m=>m.name.replace("models/","")).sort().reverse()}catch(e){if(e&&e.name==="AbortError")throw e}
+  order=[...new Set([...order,...dyn,"gemini-flash-lite-latest"])].slice(0,7)};
+ for(let i=0;i<14;i++){
+  let cand=order.filter(alive);
+  if(!cand.length&&!loaded){await extend();cand=order.filter(alive)}
+  if(!cand.length)break;
+  const md=cand[i%cand.length];att=i+1;
+  const parts=[];if(b64)parts.push({inline_data:{mime_type:"image/jpeg",data:b64}});parts.push({text:prompt});
+  const res=await fx("https://generativelanguage.googleapis.com/v1beta/models/"+md+":generateContent?key="+encodeURIComponent(key),{signal,method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({contents:[{parts}],generationConfig:Object.assign({responseMimeType:"application/json",temperature:0,maxOutputTokens:512},thinkOff?{thinkingConfig:{thinkingBudget:0}}:{})})});
+  const j=await res.json().catch(()=>({}));
+  if(res.ok){try{localStorage.setItem("gm",md)}catch(e){}return((j.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||"").join("")}
+  const msg=(j.error&&j.error.message)||"غير معروف";last=md+" — خطأ "+res.status+": "+msg;
+  if([400,401,403].includes(res.status)&&/api key|API_KEY|unauthenticated|permission denied|not valid/i.test(msg)){const e=new Error("المفتاح غير صالح أو غير مفعّل: "+msg.slice(0,90));e.badKey=true;throw e}
+  if(res.status===400&&thinkOff){thinkOff=false;i--;continue}
+  if(res.status===404){kill(md,6*3600e3);if(md===cached){try{localStorage.removeItem("gm")}catch(e){}}continue}
+  if(res.status===429){
+   const m=/retry in (?:(\d+)h)?(?:(\d+)m)?(?:([\d.]+)s)?/i.exec(msg),ms=m?((+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0))*1000:0;
+   if(ms>120000||/free_tier|PerDay|per day/i.test(msg)){kill(md,ms||6*3600e3);continue} // حصة يومية: انتقل لنموذج آخر فوراً
+   await sleep(Math.min(ms||2000,20000),signal);continue}
+  if(![500,503,504].includes(res.status))break;
+  await sleep(800*(i+1),signal);
+ }
+ const ds=order.map(m=>dead[kid+"|"+m]).filter(x=>x&&x.u>Date.now());
+ if(ds.length&&ds.length===order.length){const h=Math.max(1,Math.round(Math.max(...ds.map(x=>x.r))/3600e3));
+  const e=new Error("انتهى الحد المجاني اليومي لنماذج Gemini على هذا المفتاح، ويتجدد بعد حوالي "+toAr(h)+" ساعة. الحل: انتظر، أو فعّل الفوترة من Google AI Studio، أو استخدم مفتاحاً آخر.");e.quota=true;throw e}
+ throw new Error(last||"فشل الاتصال");
+}
+/* يجرّب المفاتيح بالترتيب: ينتقل للاحتياطي عند انتهاء الحصة أو عدم صلاحية المفتاح */
+async function readUpright(key,small,full,signal){
+ const r=compact(jsonOf(await aiCall(key,P,small,signal))),deg={r:270,l:90,d:180}[r.o];
+ if(deg){try{const s2=await rotBlob(small,deg),f2=full?await rotBlob(full,deg):null;
+   const r2=compact(jsonOf(await aiCall(key,P,s2,signal)));return{r:r2,small:s2,full:f2||full,rot:deg}}
+  catch(e){if(e&&(e.name==="AbortError"||e.quota||e.badKey))throw e}}
+ return{r,small,full,rot:0};
+}
+async function aiCall(_k,prompt,blob,signal){
+ const keys=getKeys();if(!keys.length)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
+ let last;
+ for(const k of keys){
+  try{return await aiOne(k,prompt,blob,signal)}
+  catch(e){if(e&&e.name==="AbortError")throw e;last=e;if(e&&(e.quota||e.badKey))continue;throw e}
+ }
+ if(keys.length>1&&last)last.message=(last.quota?"انتهت حصة كل المفاتيح المحفوظة. ":"")+last.message;
+ throw last;
+}
+const WF={voter_name:"#fName",voter_number:"#fNum",employee_name:"#fEmp",phone:"#fPhone",card_number:"#fCardNo"};
+let ftype="deliv",chipSt="manual";
+/* loading: كلا الأيقونتين بإطار ذهبي بلا تحديد | result: الأيقونة المصنّفة خضراء والأخرى مخفية | manual: الاثنتان ظاهرتان والمحددة خضراء */
+function setChips(st){chipSt=st;const c=$("#chips");c.dataset.s=st;
+ c.querySelectorAll(".tchip").forEach(b=>{const sel=b.dataset.t===ftype;b.classList.toggle("sel",sel&&st!=="loading");b.classList.toggle("gone",st==="result"&&!sel)});
+ $("#chipHint").style.display=st==="result"?"":"none"}
+function setType(t){ftype=t;setChips(chipSt);
+ $("#lName").textContent=FT[t].nameL;const dl=t==="deliv";
+ [$("#lEmp"),$("#fEmp")].forEach(e=>e.style.display=dl?"":"none");[$("#lPhone"),$("#fPhone")].forEach(e=>e.style.display=dl?"none":"");
+ $("#backBox").style.display=t==="card"?"":"none";
+ try{localStorage.setItem("ft",t)}catch(e){}}
+document.querySelectorAll("#chips .tchip").forEach(c=>c.onclick=()=>{
+ if(chipSt==="loading")return;
+ if(chipSt==="result"){setChips("manual");return}
+ setType(c.dataset.t);setChips("result")});
+let ft0="deliv";try{ft0=localStorage.getItem("ft")==="bio"?"bio":"deliv"}catch(e){}setType(ft0);
+const clearWarn=()=>{$("#sug").style.display="none";Object.values(WF).forEach(k=>$(k).classList.remove("warn"));$("#hint").classList.add("hide")};
+Object.values(WF).forEach(k=>$(k).addEventListener("input",e=>e.target.classList.remove("warn")));
+async function extract(blob,full){
+ att=1;let stage="يقرأ المستند";
+ const t0=Date.now(),iv=setInterval(()=>{const b=$("#busy");if(b&&b.lastChild)b.lastChild.textContent=" الذكاء الاصطناعي "+stage+"... "+toAr(Math.floor((Date.now()-t0)/1000))+" ث"+(att>1?" (محاولة "+toAr(att)+")":"")},400);
+ const er=$("#err");er.classList.add("hide");er.textContent="";clearWarn();
+ try{
+  const key=getKey();if(!key)throw new Error("لا يوجد مفتاح. اضغط زر 🔑 والصق المفتاح");
+  const u=await readUpright(key,blob,full,undefined),r=u.r;full=u.full;
+  if(u.rot){cur.img=u.full;$("#prev").src=urlOf(u.full);toast("تم تدوير الصورة تلقائياً")}
+  const un=new Set(Array.isArray(r.uncertain)?r.uncertain:[]);
+  let num=toEn(r.voter_number||"").replace(/\D/g,"");
+  const known=["biometric","delivery","card"].includes(r.form_type),dt=r.form_type==="biometric"?"bio":r.form_type==="delivery"?"deliv":r.form_type==="card"?"card":ftype,sw=dt!==ftype;
+  if(sw){toast("تم التعرف على الاستمارة: "+FT[dt].label)}
+  setType(dt);setChips(known?"result":"manual");
+  const ph=toEn(r.phone||"").replace(/\D/g,"");
+  $("#fName").value=r.voter_name||"";$("#fEmp").value=r.employee_name||"";$("#fPhone").value=ph;$("#fNum").value=num;updateSug();
+  if(full&&(num.length<7||un.has("voter_number"))){ // تدقيق إضافي بصورة أعلى دقة
+   stage="يدقّق رقم الناخب";att=1;
+   try{const r2=jsonOf(await aiCall(key,P2,full));const n2=toEn(r2.v||r2.voter_number||"").replace(/\D/g,"");
+    if(n2.length>=6){const first=num;num=n2;$("#fNum").value=num;if(n2===first||!(r2.u===true||r2.uncertain===true))un.delete("voter_number");else un.add("voter_number")}}catch(e){}
+  }
+  const msgs=[];
+  num=$("#fNum").value;
+  if(!num)msgs.push("لم يُقرأ رقم الناخب");
+  else if(num.length!==8){un.add("voter_number");msgs.push("رقم الناخب فيه "+toAr(num.length)+" أرقام، والأرقام اللي ظهرت بمستنداتك غالباً ٨")}
+  if((ftype==="bio"||ftype==="card")&&$("#fName").value.trim()&&$("#fName").value.trim().split(/\s+/).length<2){un.add("voter_name");msgs.push("اسم الأب غير مقروء، أضفه بعد اسم الناخب")}
+  if(ftype==="bio"&&ph&&ph.length!==11){un.add("phone");msgs.push("رقم الهاتف فيه "+toAr(ph.length)+" أرقام، وأرقام الموبايل عادةً ١١")}
+  un.forEach(k=>{if(WF[k])$(WF[k]).classList.add("warn")});
+  if(ftype==="card")msgs.push("أدخل رقم الهاتف وصوّر الوجه الخلفي قبل الحفظ");
+  if(un.size)msgs.push("الحقول البرتقالية غير مؤكدة، راجعها مع الصورة");
+  if(msgs.length){$("#hint").textContent="🟠 "+msgs.join(" • ");$("#hint").classList.remove("hide")}
+  if(!sw)toast(un.size||msgs.length?"تمت القراءة، راجع الحقول البرتقالية":"تمت القراءة ✅ راجع البيانات");
+ }catch(e){
+  setChips("manual");er.textContent="⚠️ "+(e instanceof TypeError?"فشل الاتصال بالإنترنت أو تم حظر الطلب: ":"")+(e.message||e);er.classList.remove("hide");toast("تعذّرت القراءة، أدخل البيانات يدوياً");
+ }finally{clearInterval(iv);$("#busy").classList.add("hide")}
+}
+function reset(){curItem=null;resetBack();setTimeout(renderBatch,0);$("#err").classList.add("hide");clearWarn();$("#capForm").classList.add("hide");$("#capStart").classList.remove("hide");cur=null}
+$("#cancel").onclick=reset;
+$("#keyBtn2").onclick=()=>{const k=prompt("الصق المفتاح الاحتياطي. يُستخدم تلقائياً إذا انتهت حصة الأساسي أو لم يعمل. اتركه فارغاً لحذفه:",lsGet("ak2"));
+ if(k!==null){try{if(k.trim())localStorage.setItem("ak2",k.trim());else localStorage.removeItem("ak2");localStorage.removeItem("gdead");toast(k.trim()?"تم حفظ المفتاح الاحتياطي ✅":"تم حذف المفتاح الاحتياطي")}catch(e){toast("تعذّر الحفظ")}}};
+$("#keyBtn").onclick=()=>{const k=prompt("الصق المفتاح الأساسي (Gemini أو Anthropic). يُحفظ على هذا الجهاز فقط:",lsGet("ak"));if(k!==null){try{localStorage.setItem("ak",k.trim());localStorage.removeItem("gdead");toast("تم حفظ المفتاح ✅")}catch(e){toast("تعذّر الحفظ")}}};
+$("#save").onclick=async()=>{
+ const t=ftype,name=$("#fName").value.trim(),num=toEn($("#fNum").value).replace(/\s/g,""),emp=t==="deliv"?$("#fEmp").value.trim():"",phone=t!=="deliv"?toEn($("#fPhone").value).replace(/\D/g,""):"",cardNo=t==="card"?toEn($("#fCardNo").value).replace(/\D/g,""):"";
+ if(!num){toast("رقم الناخب مطلوب لتسمية الصورة");return}
+ if(t==="card"){
+  if(!phone){toast("أدخل رقم الهاتف قبل الحفظ");$("#fPhone").classList.add("warn");return}
+  if(!backBlob){toast("صوّر الوجه الخلفي للبطاقة قبل الحفظ");return}
+  if(!cardNo){toast("رقم البطاقة مطلوب (من الوجه الخلفي)");$("#fCardNo").classList.add("warn");return}}
+ const ex=(await all()).find(x=>tyOf(x)===t&&toEn(x.num||"").replace(/\s/g,"")===num);
+ if(ex){toast("⚠️ هذه الاستمارة ("+FT[t].label+") محفوظة سابقاً\nرقم الناخب "+num+" — "+(ex.name||"")+"\nتاريخ الحفظ: "+(ex.ts?fmt(ex.ts):toAr(ex.date||"")),8000);return}
+ const now=Date.now(),rec={type:t,name,num,emp,phone,cardNo,ts:now,date:fmt(now),flag:""};
+ const cr=await cloudPut(rec);
+ if(cr.block){toast(cr.msg,8000);if(cr.auth)openAcct();return}
+ await put({type:t,name,num,emp,phone,cardNo,img:cur.img,img2:t==="card"?backBlob:null,ts:now,date:fmt(now),by:rec.by||"",synced:!!cr.ok});
+ if(curItem){curItem.st="ok";curItem.blob=null;curItem.flag=""}
+ toast("تم الحفظ ✅");reset();
+};
+/* ---------- ZIP / XLSX (بدون مكتبات خارجية) ---------- */
+const CT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc=u=>{let c=~0;for(let i=0;i<u.length;i++)c=CT[(c^u[i])&255]^(c>>>8);return~c>>>0};
+function zip(files){ // files:[{name,data:Uint8Array}] بدون ضغط
+ const enc=new TextEncoder(),parts=[],cd=[];let off=0;
+ for(const f of files){
+  const nm=enc.encode(f.name),cr=crc(f.data),h=new DataView(new ArrayBuffer(30));
+  h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint32(14,cr,true);h.setUint32(18,f.data.length,true);h.setUint32(22,f.data.length,true);h.setUint16(26,nm.length,true);
+  parts.push(new Uint8Array(h.buffer),nm,f.data);
+  const c=new DataView(new ArrayBuffer(46));
+  c.setUint32(0,0x02014b50,true);c.setUint16(4,20,true);c.setUint16(6,20,true);c.setUint16(8,0x0800,true);c.setUint32(16,cr,true);c.setUint32(20,f.data.length,true);c.setUint32(24,f.data.length,true);c.setUint16(28,nm.length,true);c.setUint32(42,off,true);
+  cd.push(new Uint8Array(c.buffer),nm);off+=30+nm.length+f.data.length;
+ }
+ let cs=0;cd.forEach(p=>cs+=p.length);
+ const e=new DataView(new ArrayBuffer(22));e.setUint32(0,0x06054b50,true);e.setUint16(8,files.length,true);e.setUint16(10,files.length,true);e.setUint32(12,cs,true);e.setUint32(16,off,true);
+ return new Blob([...parts,...cd,new Uint8Array(e.buffer)],{type:"application/zip"});
+}
+const esc=s=>String(s??"").replace(/[<>&"]/g,c=>({"<":"&lt;",">":"&gt;","&":"&amp;",'"':"&quot;"}[c]));
+const fname=(x,used)=>{
+ const num=(x.num||"بدون_رقم").replace(/[\\/:*?"<>|]/g,"_"),nm=tyOf(x)==="bio"?String(x.name||"").replace(/[\\/:*?"<>|\r\n]/g," ").replace(/\s+/g," ").trim():"";
+ let b=nm||num,n=b;if(nm&&used.has(n))n=nm+"_"+num;let i=1;while(used.has(n))n=b+"_"+(++i);used.add(n);return n+".jpg"};
+async function share(blob,filename){
+ const l=document.createElement("a");l.href=urlOf(blob);l.download=filename;document.body.append(l);l.click();l.remove();toast("تم ✅");
+}
+async function cell(c,v){return `<c r="${c}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`}
+$("#xl").onclick=async()=>{
+ const a=await allMerged();if(!a.length){toast("لا توجد بيانات");return}
+ const col="ABCDEFGHI",X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>',enc=new TextEncoder(),E=q=>enc.encode(q);
+ const heads={deliv:["ت","اسم المستلم","رقم الناخب","اسم الموظف الذي سلّم البطاقة","تاريخ الأرشفة","اسم ملف الصورة","الموظف الذي أرشف"],bio:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم الهاتف","تاريخ الأرشفة","اسم ملف الصورة","الموظف الذي أرشف"],card:["ت","اسم الناخب واسم الأب","رقم الناخب","رقم البطاقة","رقم الهاتف","تاريخ الأرشفة","صورة الوجه الأمامي","صورة الوجه الخلفي","الموظف الذي أرشف"]};
+ const used={},byT={deliv:[],bio:[],card:[]};
+ for(const x of a){const t=tyOf(x);used[t]=used[t]||new Set();const f=x.remote?"":fname(x,used[t]),b0=f.replace(/\.jpg$/,"");byT[t].push(t==="card"?[x.name,x.num,x.cardNo,x.phone,x.date,x.remote?"":b0+"_front.jpg",x.remote?"":b0+"_back.jpg",x.by||""]:[x.name,x.num,third(x),x.date,f,x.by||""])}
+ const sheets=["deliv","bio","card"].filter(t=>byT[t].length).map(t=>{
+  const cr=(r,j,v)=>`<c r="${col[j]}${r}" t="inlineStr"><is><t>${esc(v)}</t></is></c>`;
+  let rows=`<row r="1">${heads[t].map((h,j)=>cr(1,j,h)).join("")}</row>`;
+  byT[t].forEach((v,i)=>{const r=i+2;rows+=`<row r="${r}">${[i+1,...v].map((c,j)=>cr(r,j,c)).join("")}</row>`});
+  return{name:FT[t].sheet,xml:X+`<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView rightToLeft="1" workbookViewId="0"/></sheetViews><cols><col min="1" max="1" width="6" customWidth="1"/><col min="2" max="4" width="28" customWidth="1"/><col min="5" max="6" width="22" customWidth="1"/></cols><sheetData>${rows}</sheetData></worksheet>`}});
+ const R="http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+ const z=zip([
+  {name:"[Content_Types].xml",data:E(X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+sheets.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")+'</Types>')},
+  {name:"_rels/.rels",data:E(X+`<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`)},
+  {name:"xl/workbook.xml",data:E(X+`<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="${R}"><sheets>`+sheets.map((s2,i)=>`<sheet name="${esc(s2.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")+'</sheets></workbook>')},
+  {name:"xl/_rels/workbook.xml.rels",data:E(X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map((_,i)=>`<Relationship Id="rId${i+1}" Type="${R}/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")+'</Relationships>')},
+  ...sheets.map((s2,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:E(s2.xml)}))
+ ]);
+ share(new Blob([z],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),"ارشيف_الناخبين.xlsx");
+};
+$("#zp").onclick=async()=>{
+ const a=await all();if(!a.length){toast("لا توجد صور");return}
+ const used={},fs=[];
+ for(const x of a){const t=tyOf(x);used[t]=used[t]||new Set();const f=fname(x,used[t]);
+  if(t==="card"){const b0=f.replace(/\.jpg$/,"");fs.push({name:FT[t].dir+"/"+b0+"_front.jpg",data:new Uint8Array(await x.img.arrayBuffer())});if(x.img2)fs.push({name:FT[t].dir+"/"+b0+"_back.jpg",data:new Uint8Array(await x.img2.arrayBuffer())})}
+  else fs.push({name:FT[t].dir+"/"+f,data:new Uint8Array(await x.img.arrayBuffer())})}
+ share(zip(fs),"صور_المستندات.zip");
+};
+
+/* ---------- الوجه الخلفي لبطاقة الناخب ---------- */
+let backBlob=null;
+function resetBack(){backBlob=null;const p=$("#prevBack");p.style.display="none";p.removeAttribute("src");$("#fCardNo").value=""}
+async function pickBack(e){
+ const f=e.target.files[0];if(!f)return;
+ try{
+  toast("جاري قراءة الوجه الخلفي...");
+  const pr=await prepImage(f);backBlob=pr.blob;$("#prevBack").src=urlOf(pr.blob);$("#prevBack").style.display="block";
+  const key=getKey();if(!key)throw new Error("لا يوجد مفتاح");
+  const r=jsonOf(await aiCall(key,PB,pr.small)),no=toEn(r.c||r.card_number||"").replace(/\D/g,"");
+  if(no){$("#fCardNo").value=no;$("#fCardNo").classList.toggle("warn",r.u===true);toast(r.u===true?"تمت قراءة الوجه الخلفي، راجع رقم البطاقة":"تمت قراءة رقم البطاقة ✅")}
+  else{$("#fCardNo").classList.add("warn");toast("لم يُقرأ رقم البطاقة، أدخله يدوياً")}
+ }catch(err){$("#fCardNo").classList.add("warn");toast("تعذّرت قراءة الوجه الخلفي: "+String(err.message||err).slice(0,70))}
+}
+$("#backCam").onclick=()=>{$("#fileBack").value="";$("#fileBack").click()};
+$("#backGal").onclick=()=>{$("#fileBack2").value="";$("#fileBack2").click()};
+$("#fileBack").onchange=pickBack;$("#fileBack2").onchange=pickBack;
+/* ---------- دفعة مستندات ---------- */
+let bItems=[],bRun=false,bStop=false,curItem=null,dbLock=Promise.resolve();
+const PAR=3;let par=PAR,ctl=null,bMsg="",netFails=0;
+const withLock=fn=>{const p=dbLock.then(fn);dbLock=p.catch(()=>{});return p};
+const BL={voter_name:"الاسم",voter_number:"رقم الناخب",employee_name:"اسم الموظف",phone:"الهاتف"};
+async function prepImage(f){
+ const bmp=await createImageBitmap(f).catch(()=>null);if(!bmp)throw new Error("تعذّر فتح الصورة");
+ const sc=Math.min(1,capDim()/Math.max(bmp.width,bmp.height)),full=document.createElement("canvas");
+ full.width=Math.round(bmp.width*sc);full.height=Math.round(bmp.height*sc);full.getContext("2d").drawImage(bmp,0,0,full.width,full.height);
+ const bx=findDoc(full),out=document.createElement("canvas");out.width=bx.w;out.height=bx.h;
+ const c=out.getContext("2d");c.drawImage(full,bx.x,bx.y,bx.w,bx.h,0,0,bx.w,bx.h);
+ const small=await compressForAI(out,"gray");enhance(out,"color");
+ const blob=await new Promise(r=>out.toBlob(r,"image/jpeg",.88));
+ full.width=out.width=0;if(bmp.close)bmp.close();
+ return{blob,small};
+}
+async function readDoc(key,small,full,signal){
+ const u=await readUpright(key,small,full,signal),r=u.r;full=u.full;
+ const un=new Set(Array.isArray(r.uncertain)?r.uncertain:[]);
+ let num=toEn(r.voter_number||"").replace(/\D/g,"");
+ const type=r.form_type==="biometric"?"bio":r.form_type==="delivery"?"deliv":r.form_type==="card"?"card":null;
+ if(full&&(num.length<7||un.has("voter_number"))){try{const r2=jsonOf(await aiCall(key,P2,full,signal));const n2=toEn(r2.v||r2.voter_number||"").replace(/\D/g,"");
+  if(n2.length>=6){const f=num;num=n2;if(n2===f||!(r2.u===true||r2.uncertain===true))un.delete("voter_number");else un.add("voter_number")}}catch(e){if(e&&e.name==="AbortError")throw e}}
+ const name=(r.voter_name||"").trim(),emp=(r.employee_name||"").trim(),phone=toEn(r.phone||"").replace(/\D/g,"");
+ const hard=[],soft=[];
+ if(!type)hard.push("نوع الاستمارة غير واضح");
+ if(type==="card")hard.push("بطاقة الناخب تحتاج وجهين ورقم الهاتف: اضغط «راجع واحفظ»");
+ if(!num)hard.push("لم يُقرأ رقم الناخب");else if(num.length!==8)hard.push("رقم الناخب فيه "+toAr(num.length)+" أرقام");else if(un.has("voter_number"))hard.push("رقم الناخب غير مؤكد");
+ if(!name)hard.push("الاسم غير مقروء");
+ ["voter_name","employee_name","phone"].forEach(k=>{if(un.has(k)&&!(k==="voter_name"&&!name))soft.push(BL[k]+" غير مؤكد")});
+ if(type==="deliv"&&!emp)soft.push("اسم الموظف غير مقروء");
+ if((type==="bio"||type==="card")&&name&&name.split(/\s+/).length<2)soft.push("اسم الأب غير مقروء");
+ if(type==="bio"&&phone&&phone.length!==11)soft.push("الهاتف "+toAr(phone.length)+" رقماً");
+ return{type,name,num,emp,phone,un,hard,soft,fullOut:u.full};
+}
+async function procItem(it,key,signal){
+ it.st="busy";renderBatch();
+ try{
+  const pr=await prepImage(it.f);it.blob=pr.blob;it.url=urlOf(pr.blob);
+  let r,tries=0;
+  for(;;){try{r=await readDoc(key,pr.small,pr.blob,signal);netFails=0;break}catch(e){if(e&&e.quota)throw e;if(/429/.test(e.message)&&tries++<2&&!bStop){par=Math.max(1,par-1);await sleep(20000,signal);continue}throw e}}
+  if(r.fullOut&&r.fullOut!==pr.blob){pr.blob=r.fullOut;it.blob=r.fullOut;if(it.url)URL.revokeObjectURL(it.url);it.url=urlOf(r.fullOut)}
+  Object.assign(it,{detected:!!r.type,type:r.type||ftype,name:r.name,num:r.num,emp:r.emp,phone:r.phone,un:r.un,why:r.hard.concat(r.soft)});
+  if(r.hard.length){it.st="review";return}
+  const flag=r.soft.join("، "),now=Date.now();
+  const dupe=await withLock(async()=>{
+   const d=(await all()).find(x=>tyOf(x)===it.type&&toEn(x.num||"").replace(/\s/g,"")===it.num);if(d)return d;
+   const rec={type:it.type,name:it.name,num:it.num,emp:it.type==="deliv"?it.emp:"",phone:it.type==="bio"?it.phone:"",cardNo:"",ts:now,date:fmt(now),flag};
+    const cr=await cloudPut(rec);if(cr.block)return{_cloud:cr};
+    await put({type:it.type,name:it.name,num:it.num,emp:rec.emp,phone:rec.phone,img:pr.blob,ts:now,date:fmt(now),flag,by:rec.by||"",synced:!!cr.ok});return null});
+  if(dupe&&dupe._cloud){const c=dupe._cloud;if(c.auth){it.st="fail";it.why=[c.msg];bMsg="⛔ "+c.msg;bStop=true}else{it.st="dup";it.why=[c.msg.replace(/\n/g," • ")]}return}
+  if(dupe){it.st="dup";it.why=["محفوظة سابقاً: "+(dupe.name||"")+" — "+(dupe.ts?fmt(dupe.ts):toAr(dupe.date||""))];return}
+  it.st="ok";it.flag=flag;it.blob=null;if(it.url){URL.revokeObjectURL(it.url);it.url=null}
+ }catch(e){it.st="fail";it.why=[e&&e.name==="AbortError"?"أُوقفت الدفعة":String(e.message||e).slice(0,160)];
+  if(e&&e.quota){bMsg="⛔ "+e.message+" تُركت بقية المستندات للإعادة.";bStop=true}
+  else if(e instanceof TypeError&&++netFails>=3&&!bStop){bMsg="⛔ تعذّر الاتصال بالخدمة ٣ مرات متتالية: غالباً انقطاع النت أو تجاوز الحد المجاني. أوقفت الدفعة حتى لا تُهدر المحاولات.";bStop=true}}
+}
+async function startRun(items){
+ const key=getKey();if(!key){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑)");return}
+ if(bRun){toast("الدفعة السابقة ما زالت تعمل");return}
+ bRun=true;bStop=false;items.forEach(i=>{i.st="wait";i.why=[]});renderBatch();
+ ctl=new AbortController();par=PAR;netFails=0;bMsg="";let idx=0;
+ const worker=async w=>{while(!bStop){if(w>=par){if(idx>=items.length)break;try{await sleep(400,ctl.signal)}catch(e){break}continue}const it=items[idx++];if(!it)break;await procItem(it,key,ctl.signal);renderBatch()}};
+ await Promise.all(Array.from({length:PAR},(_,w)=>worker(w)));
+ items.forEach(i=>{if(i.st==="wait"){i.st="fail";i.why=["لم تُعالج (أُوقفت الدفعة)"]}});
+ bRun=false;renderBatch();stats();
+ const c=s=>bItems.filter(i=>i.st===s).length;
+ toast("انتهت الدفعة\n✅ مؤرشف "+toAr(c("ok"))+" • 🟠 مراجعة "+toAr(c("review"))+" • ⚠️ مكرر "+toAr(c("dup"))+" • ❌ فشل "+toAr(c("fail")),7000);
+}
+function openItem(it){
+ curItem=it;cur={img:it.blob};setType(it.type||ftype);setChips(it.detected?"result":"manual");clearWarn();
+ $("#fName").value=it.name||"";$("#fNum").value=it.num||"";$("#fEmp").value=it.emp||"";$("#fPhone").value=it.phone||"";
+ if(it.un)it.un.forEach(k=>{if(WF[k])$(WF[k]).classList.add("warn")});
+ if(!it.num||it.num.length!==8)$("#fNum").classList.add("warn");
+ $("#hint").textContent="🟠 "+(it.why&&it.why.length?it.why.join(" • "):"أدخل البيانات يدوياً");$("#hint").classList.remove("hide");
+ $("#err").classList.add("hide");$("#busy").classList.add("hide");$("#prev").src=it.url||urlOf(it.f);
+ $("#capStart").classList.add("hide");$("#capForm").classList.remove("hide");renderBatch();
+}
+function renderBatch(){
+ const card=$("#batchCard"),formOpen=!$("#capForm").classList.contains("hide");
+ card.classList.toggle("hide",!bItems.length||formOpen);if(!bItems.length||formOpen)return;
+ const n=bItems.length,done=bItems.filter(i=>i.st!=="wait"&&i.st!=="busy").length,c=s=>bItems.filter(i=>i.st===s).length;
+ $("#bTitle").textContent=(bRun?"⏳ ":"✅ ")+"تمت قراءة "+toAr(done)+" من "+toAr(n)+" مستند";
+ $("#bFill").style.width=(done/n*100)+"%";
+ const fl=bItems.filter(i=>i.st==="ok"&&i.flag).length;
+ $("#bStats").textContent="✅ مؤرشف: "+toAr(c("ok"))+(fl?" (منها "+toAr(fl)+" بملاحظة)":"")+"  •  🟠 تحتاج مراجعة: "+toAr(c("review"))+"  •  ⚠️ مكرر: "+toAr(c("dup"))+"  •  ❌ فشل: "+toAr(c("fail"));
+ $("#bStop").style.display=bRun?"":"none";
+ $("#bNote").textContent=bMsg;$("#bNote").style.display=bMsg?"":"none";
+ $("#bRetry").style.display=!bRun&&c("fail")?"":"none";
+ const L=$("#bList");L.innerHTML="";
+ bItems.filter(i=>["review","dup","fail"].includes(i.st)).forEach(it=>{
+  const d=document.createElement("div");d.className="bi";
+  const im=document.createElement("img");im.src=it.url||(it.url=urlOf(it.f));
+  const tx=document.createElement("div");tx.innerHTML="<b></b><small></small>";
+  tx.children[0].textContent=(it.st==="dup"?"⚠️ مكرر: ":it.st==="fail"?"❌ فشل: ":"🟠 ")+(it.name||it.file||"");
+  tx.children[1].textContent=(it.num?"رقم الناخب "+it.num+" — ":"")+(it.why||[]).join(" • ");
+  d.append(im,tx);
+  const mk=(t,fn)=>{const b=document.createElement("button");b.className="chip on";b.textContent=t;b.onclick=fn;d.append(b)};
+  if(it.st==="review")mk("راجع واحفظ",()=>openItem(it));
+  if(it.st==="fail"){mk("أعد",()=>startRun([it]));mk("يدوي",()=>openItem(it))}
+  if(it.st==="dup")mk("إخفاء",()=>{bItems=bItems.filter(x=>x!==it);renderBatch()});
+  L.append(d)});
+}
+$("#bRetry").onclick=()=>{if(!bRun)startRun(bItems.filter(i=>i.st==="fail"))};
+$("#bStop").onclick=()=>{bStop=true;if(ctl)ctl.abort();toast("تم إلغاء الطلبات الجارية")};
+const handleBatch=fs=>{
+ if(!fs.length)return;
+ if(!getKey()){toast("أدخل مفتاح الذكاء الاصطناعي أولاً (🔑)");return}
+ if(fs.length>60&&!confirm("عدد الصور "+toAr(fs.length)+". قد تستغرق وقتاً وتتجاوز الحد المجاني. هل تتابع؟"))return;
+ bItems=bItems.filter(i=>["review","fail","dup"].includes(i.st));
+ const fresh=fs.map(f=>({file:f.name||"صورة",f,st:"wait",why:[]}));bItems.push(...fresh);startRun(fresh);
+};
+$("#file2").onchange=e=>{const fs=[...e.target.files];if(fs.length>1)handleBatch(fs);else onPick(e)};
+
+/* ---------- اقتراحات تصحيح الأسماء + التكبير + التدوير اليدوي ---------- */
+const NAMES="محمد أحمد علي حسن حسين عباس كاظم جاسم يوسف إبراهيم اسماعيل عبد الله الحسين الرضا الأمير الزهرة الكريم الرحمن الجبار الستار الواحد العباس الحميد مصطفى مهدي موسى عيسى صالح سعد سعيد ناصر نصير منير جعفر حيدر باسم قاسم هاشم فاضل فالح كريم رحيم رحمن رحمة صادق طالب طارق ماجد ماهر مازن علاء عماد عمار عمر خالد خليل خضير جواد جبار جليل جميل حميد حامد حازم زيد زهير زيدان سلمان سليم سلام شاكر شريف صباح صبري صفاء ضياء عادل عامر عدنان عقيل غالب غانم فراس فارس فيصل فاروق لؤي مالك مرتضى مسلم مجيد محسن محمود مؤيد نبيل نزار نعمان هادي هاني هشام وليد ياسر ياسين يحيى علوان عليوي فاطمة زينب مريم سارة نور زهراء آمنة خديجة رقية سكينة نعيمة هدى سعاد سناء ميس ريم رنا".split(" ");
+async function updateSug(){
+ const box=$("#sug"),toks=$("#fName").value.trim().split(/\s+/).filter(t=>t.length>=3);
+ if(!toks.length){box.style.display="none";return}
+ const dict=new Map(),add=(w,f)=>{const n=norm(w);if(!n)return;const e=dict.get(n);if(e)e.f+=f;else dict.set(n,{w,f})};
+ NAMES.forEach(w=>add(w,1));
+ try{(await all()).forEach(x=>String(x.name||"").split(/\s+/).forEach(w=>{if(w.length>=3)add(w,2)}))}catch(e){}
+ const out=[];
+ toks.forEach(t=>{const n=norm(t);if(dict.has(n))return;let best=null;
+  for(const[k,v]of dict){if(Math.abs(k.length-n.length)>1)continue;if(lev(n,k,1)<=1&&(!best||v.f>best.f))best=v}
+  if(best)out.push([t,best.w])});
+ box.innerHTML="";if(!out.length){box.style.display="none";return}
+ box.style.display="";const lab=document.createElement("small");lab.className="note";lab.style.display="block";lab.style.textAlign="right";lab.textContent="💡 اقتراحات تصحيح (اضغط لتطبيق):";box.append(lab);
+ out.forEach(([from,to])=>{const b=document.createElement("button");b.type="button";b.className="chip on";b.style.margin="4px 0 0 6px";b.textContent=from+" ← "+to;
+  b.onclick=()=>{$("#fName").value=$("#fName").value.split(/\s+/).map(t=>t===from?to:t).join(" ");$("#fName").classList.remove("warn");updateSug()};box.append(b)});
+}
+$("#fName").addEventListener("input",()=>{clearTimeout(window.__sg);window.__sg=setTimeout(updateSug,350)});
+function zoomImg(src){const d=$("#dlg");d.innerHTML="";const w=document.createElement("div");w.style.cssText="max-height:78vh;overflow:auto;border-radius:12px;background:#fff";
+ const im=document.createElement("img");im.src=src;im.style.cssText="width:230%;display:block";w.append(im);
+ const c=document.createElement("button");c.className="big s";c.textContent="إغلاق";c.style.marginTop="10px";c.onclick=()=>d.close();d.append(w,c);d.showModal()}
+$("#prev").onclick=()=>zoomImg($("#prev").src);$("#zoomBtn").onclick=()=>zoomImg($("#prev").src);
+$("#prevBack").onclick=()=>zoomImg($("#prevBack").src);
+$("#rotBtn").onclick=async()=>{
+ if(!cur||!cur.img)return;
+ try{const r90=await rotBlob(cur.img,90);cur.img=r90;$("#prev").src=urlOf(r90);
+  const bmp=await createImageBitmap(r90),small=await compressForAI(bmp,"gray");if(bmp.close)bmp.close();
+  setChips("loading");$("#busy").classList.remove("hide");await extract(small,r90)}
+ catch(e){toast("تعذّر تدوير الصورة")}};
+$("#hq").checked=hqOn();$("#hq").onchange=e=>{try{localStorage.setItem("hq",e.target.checked?"1":"0")}catch(x){}};
+/* ---------- الأرشيف المشترك (Firebase، نصوص فقط، بدون صور) ---------- */
+let cfg=null,fbs=null,idTok="",tokExp=0,remote=new Map(),lastTs=0,lastFull=0,lastSync=0,syncing=false,syncErr="",pend=[];
+const persist=(k,v)=>{try{localStorage.setItem(k,typeof v==="string"?v:JSON.stringify(v))}catch(e){}};
+try{cfg=JSON.parse(localStorage.getItem("fbcfg")||"null")}catch(e){}
+try{fbs=JSON.parse(localStorage.getItem("fbs")||"null")}catch(e){}
+try{pend=JSON.parse(localStorage.getItem("fbpend")||"[]")}catch(e){}
+try{JSON.parse(localStorage.getItem("fbcache")||"[]").forEach(r=>remote.set(r.type+"|"+r.num,r))}catch(e){}
+try{const m=/#cfg=([^&]+)/.exec(location.hash);if(m){const c=JSON.parse(atob(decodeURIComponent(m[1])));
+ if(c.apiKey&&c.projectId){cfg={apiKey:c.apiKey,projectId:c.projectId};persist("fbcfg",cfg);history.replaceState(null,"",location.pathname+location.search);setTimeout(()=>toast("تم إعداد الأرشيف المشترك ✅ سجّل الدخول من أيقونة 👤"),700)}}}catch(e){}
+const FSB=()=>"https://firestore.googleapis.com/v1/projects/"+cfg.projectId+"/databases/(default)/documents";
+const AUTHERR={EMAIL_NOT_FOUND:"الإيميل غير مسجّل",INVALID_PASSWORD:"كلمة المرور غير صحيحة",INVALID_LOGIN_CREDENTIALS:"الإيميل أو كلمة المرور غير صحيحة",USER_DISABLED:"الحساب معطّل",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كثيرة، حاول لاحقاً",INVALID_EMAIL:"الإيميل غير صالح",MISSING_PASSWORD:"أدخل كلمة المرور"};
+async function fbLogin(email,pw,name){
+ const r=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key="+encodeURIComponent(cfg.apiKey),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({email,password:pw,returnSecureToken:true})});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok){const code=String((j.error&&j.error.message)||"").split(" ")[0];throw new Error(AUTHERR[code]||("تعذّر تسجيل الدخول: "+code))}
+ fbs={refresh:j.refreshToken,uid:j.localId,email:j.email,name:(name||"").trim()||String(j.email).split("@")[0]};idTok=j.idToken;tokExp=Date.now()+(+j.expiresIn||3600)*1000;persist("fbs",fbs);
+}
+async function fbToken(){
+ if(!cfg||!fbs)throw new Error("غير مسجّل الدخول");
+ if(idTok&&Date.now()<tokExp-60000)return idTok;
+ const r=await fetch("https://securetoken.googleapis.com/v1/token?key="+encodeURIComponent(cfg.apiKey),{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(fbs.refresh)});
+ const j=await r.json().catch(()=>({}));
+ if(!r.ok){if(r.status===400||r.status===401){fbLogout(true);throw new Error("انتهت جلسة الدخول، سجّل الدخول من جديد")}throw new TypeError("refresh failed "+r.status)}
+ idTok=j.id_token;tokExp=Date.now()+(+j.expires_in||3600)*1000;if(j.refresh_token){fbs.refresh=j.refresh_token;persist("fbs",fbs)}return idTok;
+}
+function fbLogout(silent){fbs=null;idTok="";remote=new Map();lastTs=0;try{localStorage.removeItem("fbs");localStorage.removeItem("fbcache")}catch(e){}acctUI();if(!silent)toast("تم تسجيل الخروج")}
+const sv=v=>({stringValue:String(v==null?"":v)});
+const toFields=r=>({type:sv(r.type),name:sv(r.name),num:sv(r.num),emp:sv(r.emp),phone:sv(r.phone),cardNo:sv(r.cardNo),by:sv(r.by),byUid:sv(fbs.uid),flag:sv(r.flag),date:sv(r.date),ts:{timestampValue:new Date(r.ts).toISOString()}});
+const fromDoc=d=>{const f=d.fields||{},g=k=>(f[k]&&f[k].stringValue)||"";return{type:g("type"),name:g("name"),num:g("num"),emp:g("emp"),phone:g("phone"),cardNo:g("cardNo"),by:g("by"),byUid:g("byUid"),flag:g("flag"),date:g("date"),ts:f.ts&&f.ts.timestampValue?Date.parse(f.ts.timestampValue):0}};
+const rkey=r=>r.type+"|"+r.num,docId=r=>encodeURIComponent(r.type+"_"+r.num);
+const cachePersist=()=>persist("fbcache",[...remote.values()]);
+const dupMsg=d=>"⚠️ هذه الاستمارة ("+(FT[d.type]?FT[d.type].label:"")+") مؤرشفة سابقاً من قبل «"+(d.by||"موظف آخر")+"»\nرقم الناخب "+d.num+(d.name?" — "+d.name:"")+"\nبتاريخ "+(d.ts?fmt(d.ts):toAr(d.date||""));
+function queuePending(r){pend=pend.filter(p=>rkey(p)!==rkey(r));pend.push(r);persist("fbpend",pend);acctUI()}
+async function cloudPut(r){ // يحجز الرقم بالأرشيف المشترك (يمنع التكرار بين الموظفين)
+ if(!cfg)return{skip:true};
+ if(!fbs)return{block:true,auth:true,msg:"سجّل الدخول أولاً من أيقونة 👤 أعلى الصفحة"};
+ const ex=remote.get(rkey(r));if(ex)return{block:true,dup:ex,msg:dupMsg(ex)};
+ r.by=fbs.name;
+ try{
+  const tk=await fbToken(),res=await fetch(FSB()+"/archive?documentId="+docId(r),{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({fields:toFields(r)})});
+  if(res.ok){remote.set(rkey(r),{...r,byUid:fbs.uid});cachePersist();return{ok:true}}
+  if(res.status===409){const g=await fetch(FSB()+"/archive/"+docId(r),{headers:{authorization:"Bearer "+tk}}),d=g.ok?fromDoc(await g.json()):{type:r.type,num:r.num,by:"موظف آخر",date:""};remote.set(rkey(d),d);cachePersist();return{block:true,dup:d,msg:dupMsg(d)}}
+  const j=await res.json().catch(()=>({}));
+  if(res.status===401||res.status===403)return{block:true,msg:"لا توجد صلاحية للأرشفة المشتركة: "+((j.error&&j.error.message)||res.status)};
+  throw new TypeError("HTTP "+res.status);
+ }catch(e){
+  if(e instanceof TypeError){queuePending(r);return{offline:true}}
+  return{block:true,msg:"تعذّرت الأرشفة المشتركة: "+(e.message||e)};
+ }
+}
+async function cloudDel(x){
+ if(!cfg||!fbs||x.remote)return;const key=tyOf(x)+"|"+toEn(x.num||""),r={type:tyOf(x),num:toEn(x.num||"")};
+ pend=pend.filter(p=>rkey(p)!==key);persist("fbpend",pend);
+ const ex=remote.get(key);if(!x.synced&&!(ex&&ex.byUid===fbs.uid))return;
+ try{const tk=await fbToken(),res=await fetch(FSB()+"/archive/"+docId(r),{method:"DELETE",headers:{authorization:"Bearer "+tk}});if(res.ok){remote.delete(key);cachePersist()}else throw 0}
+ catch(e){toast("تعذّر حذف النسخة من الأرشيف المشترك")}
+}
+async function cloudDelRemote(x){
+ if(!cfg||!fbs)return;const r={type:x.type,num:x.num};
+ try{const tk=await fbToken(),res=await fetch(FSB()+"/archive/"+docId(r),{method:"DELETE",headers:{authorization:"Bearer "+tk}});
+  if(res.ok){remote.delete(rkey(r));cachePersist();toast("تم الحذف من الأرشيف المشترك");refreshViews();return}
+  if(res.status===401||res.status===403){toast("لا تملك صلاحية حذف سجل موظف آخر (للمدير فقط)");return}
+  throw new Error("HTTP "+res.status)}
+ catch(e){toast("تعذّر الحذف: "+String(e.message||e).slice(0,60))}
+}
+async function flushPending(){
+ if(!cfg||!fbs||!pend.length)return;const keep=[];
+ for(const r of pend){
+  try{const tk=await fbToken(),res=await fetch(FSB()+"/archive?documentId="+docId(r),{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({fields:toFields(r)})});
+   if(res.ok||res.status===409||res.status===401||res.status===403)continue;keep.push(r)}catch(e){keep.push(r)}}
+ pend=keep;persist("fbpend",pend);
+}
+async function cloudSync(full){
+ if(!cfg||!fbs||syncing)return;syncing=true;
+ try{
+  await flushPending();
+  const tk=await fbToken(),doFull=full||!lastTs||Date.now()-lastFull>900000;
+  const q={from:[{collectionId:"archive"}],orderBy:[{field:{fieldPath:"ts"},direction:"ASCENDING"}],limit:doFull?1000:500};
+  if(!doFull)q.where={fieldFilter:{field:{fieldPath:"ts"},op:"GREATER_THAN",value:{timestampValue:new Date(lastTs-600000).toISOString()}}};
+  const res=await fetch(FSB()+":runQuery",{method:"POST",headers:{authorization:"Bearer "+tk,"content-type":"application/json"},body:JSON.stringify({structuredQuery:q})});
+  if(!res.ok){const j=await res.json().catch(()=>({})),e0=Array.isArray(j)?j[0]:j;throw new Error((e0&&e0.error&&e0.error.message)||("HTTP "+res.status))}
+  const rows=await res.json(),got=rows.filter(x=>x.document).map(x=>fromDoc(x.document));
+  if(doFull){remote=new Map();lastFull=Date.now()}
+  got.forEach(r=>{remote.set(rkey(r),r);if(r.ts>lastTs)lastTs=r.ts});
+  if(doFull&&rows.length<1000){for(const x of await all()){if(x.synced&&!x.deletedRemote&&!remote.has(tyOf(x)+"|"+toEn(x.num||""))){x.deletedRemote=true;x.synced=false;x.flag=(x.flag?x.flag+"، ":"")+"حُذف من الأرشيف المشترك";await upd(x)}}}
+  cachePersist();lastSync=Date.now();syncErr="";
+ }catch(e){syncErr=String(e.message||e).slice(0,90)}
+ finally{syncing=false;acctUI();refreshViews()}
+}
+function refreshViews(){
+ if(!$("#all").classList.contains("hide"))list("#aRes",null);
+ if(!$("#srch").classList.contains("hide"))list("#sRes",$("#q").value);
+}
+async function allMerged(){
+ const loc=await all();if(!cfg||!fbs)return loc;
+ const keys=new Set(loc.map(x=>tyOf(x)+"|"+toEn(x.num||"")));
+ return loc.concat([...remote.values()].filter(r=>!keys.has(rkey(r))).map(r=>({...r,id:"r:"+rkey(r),remote:true})));
+}
+const USER_SVG='<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.2 3.6-7 8-7s8 2.8 8 7"/></svg>';
+function acctUI(){
+ const b=$("#acct");b.innerHTML=USER_SVG;b.className=!cfg?"":!fbs?"wait":syncErr?"err":"ok";
+ b.title=!cfg?"الأرشيف المشترك غير مفعّل":!fbs?"سجّل الدخول":"مسجّل: "+fbs.name;
+}
+function openAcct(){
+ const d=$("#dlg");d.innerHTML="";
+ const h=document.createElement("b");h.textContent="👤 الحساب والأرشيف المشترك";h.style.fontSize="17px";d.append(h);
+ const note=t=>{const p=document.createElement("p");p.className="note";p.style.cssText="text-align:right;line-height:1.8;white-space:pre-line";p.textContent=t;d.append(p);return p};
+ const inp=(ph,type,val)=>{const i=document.createElement("input");i.type=type||"text";i.placeholder=ph;i.value=val||"";i.style.marginTop="8px";i.autocomplete="off";d.append(i);return i};
+ const btn=(t,cls,fn)=>{const b=document.createElement("button");b.type="button";b.className="big "+(cls||"");b.textContent=t;b.style.cssText="margin-top:10px;padding:12px";b.onclick=fn;d.append(b);return b};
+ if(!cfg){
+  note("الأرشيف المشترك غير مفعّل على هذا الجهاز.\nإذا أعطاك المدير رابط الإعداد فافتحه. وإذا كنت المدير، الصق نص firebaseConfig هنا:");
+  const ta=document.createElement("textarea");ta.rows=5;ta.placeholder='const firebaseConfig = { apiKey: "...", projectId: "..." }';
+  ta.style.cssText="width:100%;margin-top:8px;padding:10px;border-radius:12px;border:2px solid var(--bd);background:var(--bg);color:var(--tx);font:inherit;direction:ltr";d.append(ta);
+  btn("حفظ الإعداد","g",()=>{const a=/apiKey\s*:\s*["']([^"']+)/.exec(ta.value),p=/projectId\s*:\s*["']([^"']+)/.exec(ta.value);
+   if(!a||!p){toast("لم أجد apiKey أو projectId بالنص");return}cfg={apiKey:a[1],projectId:p[1]};persist("fbcfg",cfg);acctUI();openAcct()});
+ }else if(!fbs){
+  note("سجّل الدخول بالإيميل وكلمة المرور اللي أعطاك إياها المدير.");
+  const e=inp("الإيميل","email"),pw=inp("كلمة المرور","password"),nm=inp("اسمك (يظهر بالأرشيف مع كل مستند)","text",lsGet("myname")),msg=note("");msg.style.color="#ff8aa5";
+  btn("دخول","g",async()=>{msg.textContent="";try{persist("myname",nm.value.trim());await fbLogin(e.value.trim(),pw.value,nm.value);acctUI();cloudSync(true);toast("تم تسجيل الدخول ✅");d.close()}
+   catch(er){msg.textContent=(er instanceof TypeError?"تعذّر الاتصال بالإنترنت: ":"")+er.message}});
+ }else{
+  note("الموظف: "+fbs.name+"\nالإيميل: "+fbs.email);
+  note((syncErr?"⚠️ خطأ المزامنة: "+syncErr:"آخر مزامنة: "+(lastSync?fmt(lastSync):"—"))+"\nمستندات الأرشيف المشترك: "+toAr(remote.size)+(pend.length?"\nبانتظار الإرسال: "+toAr(pend.length):""));
+  btn("🔄 تحديث الآن","b",async()=>{await cloudSync(true);openAcct()});
+  btn("📎 نسخ رابط إعداد الموظفين","s",async()=>{const link=location.origin+location.pathname+"#cfg="+encodeURIComponent(btoa(JSON.stringify(cfg)));try{await navigator.clipboard.writeText(link);toast("تم نسخ الرابط")}catch(e){prompt("انسخ الرابط:",link)}});
+  btn("تسجيل الخروج","s",()=>{if(confirm("تسجيل الخروج؟ أرشيفك المحلي يبقى على الجهاز.")){fbLogout();d.close()}});
+ }
+ btn("إغلاق","s",()=>d.close());d.showModal();
+}
+$("#acct").onclick=openAcct;
+setInterval(()=>{if(!document.hidden)cloudSync(false)},20000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)cloudSync(false)});
+window.addEventListener("online",()=>cloudSync(true));
+acctUI();if(cfg&&fbs)cloudSync(true);
+
+openDb().then(()=>stats());
+})();
+</script>
+</body>
+</html>
